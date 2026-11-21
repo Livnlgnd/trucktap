@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+release
+dist
+server/data
+.tmp
+.git
+.env
+.env.*
+*.log
+*.exe

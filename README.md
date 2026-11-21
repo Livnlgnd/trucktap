@@ -5,10 +5,12 @@ shop/warehouse runners. Techs tap the parts they used on the van, then send a
 restock list in one step. The shop sees a live pick-list and a consolidated
 supplier order — online or offline.
 
-The repository now contains a complete three-part product:
+**Live website:** https://trucktap-blush.vercel.app
+
+The repository contains a complete three-part product:
 
 - **Windows desktop app** packaged with Electron
-- **Installable PWA** for browsers and phones
+- **Installable PWA** deployed on Vercel
 - **Team Sync backend** with accounts, workspaces, roles, and real multi-device sync
 
 ## Quick start — full stack
@@ -61,7 +63,12 @@ Desktop details:
 
 ## Team Sync backend
 
-The backend is a TypeScript/Express service backed by Node's built-in SQLite.
+The backend is available in two deployment forms sharing the same API contract:
+
+- **Self-hosted:** TypeScript/Express + Node SQLite (`server/`)
+- **Hosted website:** Vercel Functions + Neon Postgres (`api/`), used by
+  https://trucktap-blush.vercel.app
+
 It provides:
 
 - Owner, shop, and tech accounts
@@ -71,10 +78,11 @@ It provides:
 - Idempotent push of offline operations
 - Full workspace snapshot pulls
 - ~8-second polling for remote changes
-- Optional same-origin serving of the built PWA
+- Optional same-origin serving of the built PWA (self-hosted mode)
 
 Full setup, API, environment, Docker, and security details are in
-[docs/BACKEND.md](docs/BACKEND.md).
+[docs/BACKEND.md](docs/BACKEND.md). Hosted deployment details are in
+[docs/WEB.md](docs/WEB.md).
 
 ## PWA / web app
 
@@ -140,4 +148,7 @@ npm run server:smoke
 ```
 
 `server:smoke` builds and runs API integration tests against an isolated SQLite
-database.
+database. `npm run build` also type-checks the serverless Postgres API in
+`api/`.
+
+The hosted website is deployed with `npm run deploy:web`.

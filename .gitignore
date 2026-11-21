@@ -31,3 +31,5 @@ release
 .tmp
 *.db-wal
 *.db-shm
+.vercel
+.env*

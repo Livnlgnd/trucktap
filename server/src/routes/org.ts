@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, type Request } from 'express'
 import { db, bumpRevision } from '../db.js'
 import { getAuth, requireAuth, requireOwner } from '../middleware/auth.js'
 import { memberRoleSchema } from '../lib/validation.js'
@@ -32,8 +32,16 @@ orgRouter.get('/', (_request, response) => {
   })
 })
 
+function memberIdFromRequest(request: Request): string {
+  const value = request.params.userId ?? request.query.userId
+  if (typeof value !== 'string' || value.length === 0 || value.length > 120) {
+    throw new Error('Member ID is required.')
+  }
+  return value
+}
+
 orgRouter.patch(
-  '/members/:userId',
+  ['/member', '/members/:userId'],
   requireOwner,
   (request, response) => {
     const auth = getAuth(response)
@@ -43,12 +51,19 @@ orgRouter.patch(
       return
     }
 
-    if (request.params.userId === auth.userId) {
+    let targetUserId: string
+    try {
+      targetUserId = memberIdFromRequest(request)
+    } catch (error) {
+      response.status(400).json({ error: (error as Error).message })
+      return
+    }
+
+    if (targetUserId === auth.userId) {
       response.status(400).json({ error: 'Change your own role from another owner account.' })
       return
     }
 
-    const targetUserId = String(request.params.userId)
     const membership = db
       .prepare('SELECT role FROM memberships WHERE org_id = ? AND user_id = ?')
       .get(auth.orgId, targetUserId) as { role: string } | undefined
@@ -72,38 +87,48 @@ orgRouter.patch(
   },
 )
 
-orgRouter.delete('/members/:userId', (request, response) => {
-  const auth = getAuth(response)
-  if (auth.role !== 'owner') {
-    response.status(403).json({ error: 'Only the workspace owner can remove members.' })
-    return
-  }
+orgRouter.delete(
+  ['/member', '/members/:userId'],
+  (request, response) => {
+    const auth = getAuth(response)
+    if (auth.role !== 'owner') {
+      response.status(403).json({ error: 'Only the workspace owner can remove members.' })
+      return
+    }
 
-  if (request.params.userId === auth.userId) {
-    response.status(400).json({ error: 'You cannot remove yourself from the workspace.' })
-    return
-  }
+    let targetUserId: string
+    try {
+      targetUserId = memberIdFromRequest(request)
+    } catch (error) {
+      response.status(400).json({ error: (error as Error).message })
+      return
+    }
 
-  const targetUserId = String(request.params.userId)
-  const membership = db
-    .prepare('SELECT role FROM memberships WHERE org_id = ? AND user_id = ?')
-    .get(auth.orgId, targetUserId) as { role: string } | undefined
+    if (targetUserId === auth.userId) {
+      response.status(400).json({ error: 'You cannot remove yourself from the workspace.' })
+      return
+    }
 
-  if (!membership) {
-    response.status(404).json({ error: 'Member not found.' })
-    return
-  }
+    const membership = db
+      .prepare('SELECT role FROM memberships WHERE org_id = ? AND user_id = ?')
+      .get(auth.orgId, targetUserId) as { role: string } | undefined
 
-  if (membership.role === 'owner') {
-    response.status(400).json({ error: 'The workspace owner cannot be removed.' })
-    return
-  }
+    if (!membership) {
+      response.status(404).json({ error: 'Member not found.' })
+      return
+    }
 
-  db.prepare('DELETE FROM memberships WHERE org_id = ? AND user_id = ?').run(
-    auth.orgId,
-    targetUserId,
-  )
-  bumpRevision(auth.orgId)
+    if (membership.role === 'owner') {
+      response.status(400).json({ error: 'The workspace owner cannot be removed.' })
+      return
+    }
 
-  response.json({ members: listMembers(auth.orgId) })
-})
+    db.prepare('DELETE FROM memberships WHERE org_id = ? AND user_id = ?').run(
+      auth.orgId,
+      targetUserId,
+    )
+    bumpRevision(auth.orgId)
+
+    response.json({ members: listMembers(auth.orgId) })
+  },
+)

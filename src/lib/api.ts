@@ -246,20 +246,26 @@ export const teamApi = {
     userId: string,
     role: 'tech' | 'shop',
   ): Promise<{ members: TeamMember[] }> {
-    return requestApi(`/api/org/members/${encodeURIComponent(userId)}`, {
-      method: 'PATCH',
-      token,
-      body: { role },
-    })
+    return requestApi(
+      `/api/org/member?userId=${encodeURIComponent(userId)}`,
+      {
+        method: 'PATCH',
+        token,
+        body: { role },
+      },
+    )
   },
 
   removeMember(
     token: string,
     userId: string,
   ): Promise<{ members: TeamMember[] }> {
-    return requestApi(`/api/org/members/${encodeURIComponent(userId)}`, {
-      method: 'DELETE',
-      token,
-    })
+    return requestApi(
+      `/api/org/member?userId=${encodeURIComponent(userId)}`,
+      {
+        method: 'DELETE',
+        token,
+      },
+    )
   },
 }

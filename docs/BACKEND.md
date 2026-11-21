@@ -3,7 +3,15 @@
 The TruckTap backend provides optional multi-device Team Sync for the desktop
 app and PWA. Local-only usage never requires the server.
 
-## Stack
+Two implementations share the same API contract:
+
+- **Self-hosted:** Express 5 + Node SQLite (`server/`)
+- **Hosted:** Vercel Functions + Neon Postgres (`api/`), powering
+  https://trucktap-blush.vercel.app
+
+See [WEB.md](WEB.md) for hosted deployment details.
+
+## Self-hosted stack
 
 - Node.js 24+ with the built-in `node:sqlite` database
 - Express 5 API
@@ -98,8 +106,8 @@ All protected routes use `Authorization: Bearer <token>`.
 | `POST` | `/api/auth/login` | — | Sign in |
 | `POST` | `/api/auth/join` | — | Create account with workspace join code |
 | `GET` | `/api/org` | member | Workspace info + members |
-| `PATCH` | `/api/org/members/:userId` | owner | Change a shop/tech role |
-| `DELETE` | `/api/org/members/:userId` | owner | Remove a member |
+| `PATCH` | `/api/org/member?userId=…` | owner | Change a shop/tech role |
+| `DELETE` | `/api/org/member?userId=…` | owner | Remove a member |
 | `POST` | `/api/workspace/import` | owner | Import into an empty workspace |
 | `GET` | `/api/sync/snapshot` | member | Full teams workspace snapshot |
 | `POST` | `/api/sync/push` | member | Push idempotent local mutation operations |
