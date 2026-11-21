@@ -1,24 +1,51 @@
 # TruckTap Web
 
-**Live site:** https://trucktap-blush.vercel.app
+**GitHub Pages:** https://livnlgnd.github.io/trucktap/  
+**Vercel:** https://trucktap-blush.vercel.app
 
-The public site is the full TruckTap PWA, not a marketing mock-up. It includes
-the offline-first clicker, shop pick-lists, template management, local CSV
-export, and Team Sync.
+Both sites run the full TruckTap PWA: the offline-first clicker, shop
+pick-lists, template management, local CSV export, and Team Sync.
 
 ## Hosted architecture
 
-- **Frontend/PWA:** Vite build deployed as static assets on Vercel
+- **Frontend/PWA:** Vite build deployed to GitHub Pages (subpath `/trucktap/`)
+  and Vercel (root)
 - **Team Sync API:** Vercel Functions in `api/`
 - **Database:** Neon Postgres, provisioned through the Vercel Neon integration
 - **Local persistence:** IndexedDB/Dexie remains the source of truth on each
   device; the sync queue flushes to the hosted API when online
-- **Service worker:** versioned by build; it never caches `/api/` responses
+- **Service worker:** scoped to its deploy path, versioned by build, and never
+  caches `/api/` responses
 
-The hosted functions use the same request/response contract as the self-hosted
-Express/SQLite backend in `server/`.
+The GitHub Pages frontend calls the Vercel API cross-origin. CORS on the Vercel
+API allows `https://livnlgnd.github.io` and `trucktap://app` for the desktop app.
 
 ## Deployment
+
+### GitHub Pages
+
+GitHub Pages serves the built files from the `gh-pages` branch:
+
+**https://livnlgnd.github.io/trucktap/**
+
+The production frontend build uses:
+
+```text
+VITE_BASE_PATH=/trucktap/
+VITE_API_URL=https://trucktap-blush.vercel.app
+```
+
+Deploy the latest build with:
+
+```bash
+npm run deploy:pages
+```
+
+The script builds with the correct base path, publishes only the static bundle
+to `gh-pages`, and keeps source files off the published branch. The Pages site
+calls the Vercel-hosted API cross-origin.
+
+### Vercel
 
 The project is linked to Vercel as `joshuas-projects-36819d49/trucktap`.
 
@@ -33,9 +60,8 @@ Required production environment variables:
 - `DATABASE_URL` and the Neon-provided Postgres variables (connected through the
   Vercel Neon integration)
 - `JWT_SECRET` (32+ random bytes)
-- `CORS_ORIGINS` including the public site and `trucktap://app` for the desktop
-  client
-- `ELECTRON_SKIP_BINARY_DOWNLOAD=1` to keep Vercel builds fast
+- `CORS_ORIGINS` including both public sites and `trucktap://app`
+- `ELECTRON_SKIP_BINARY_DOWNLOAD=1` to keep hosted builds fast
 
 `vercel.json` sets the production CSP and service-worker headers.
 `.vercelignore` excludes local builds, installers, dependencies, and env files.

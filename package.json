@@ -13,6 +13,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "deploy:web": "vercel deploy --prod --yes",
+    "deploy:pages": "node scripts/deploy-pages.mjs",
     "install:all": "npm install && npm --prefix server install",
     "server:install": "npm --prefix server install",
     "server:dev": "npm --prefix server run dev",

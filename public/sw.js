@@ -1,30 +1,44 @@
 const CACHE_NAME = 'trucktap-shell-__TRUCKTAP_BUILD__'
+const BASE = new URL('./', self.location.href).pathname
 const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon.svg',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-512.png',
-  '/icons/apple-touch-icon.png',
+  BASE,
+  `${BASE}index.html`,
+  `${BASE}manifest.json`,
+  `${BASE}icons/icon.svg`,
+  `${BASE}icons/icon-192.png`,
+  `${BASE}icons/icon-512.png`,
+  `${BASE}icons/icon-maskable-512.png`,
+  `${BASE}icons/apple-touch-icon.png`,
 ]
+
+function sameOriginAsset(value) {
+  try {
+    const url = new URL(value, self.location.origin + BASE)
+    if (url.origin !== self.location.origin) return null
+    if (!url.pathname.startsWith(BASE)) return null
+    return url.pathname + url.search
+  } catch {
+    return null
+  }
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME)
-      const shellResponse = await fetch('/index.html', { cache: 'no-store' })
-      await cache.put('/index.html', shellResponse.clone())
+      const shellResponse = await fetch(`${BASE}index.html`, {
+        cache: 'no-store',
+      })
+      await cache.put(`${BASE}index.html`, shellResponse.clone())
 
       // Vite emits hashed asset filenames. Discover them from the production
       // HTML so the complete app shell works offline after the first install.
       const html = await shellResponse.text()
-      const assetUrls = new Set(
-        [...html.matchAll(/(?:src|href)="(\/(?:assets|icons)\/[^"]+)"/g)].map(
-          (match) => match[1],
-        ),
-      )
+      const assetUrls = new Set()
+      for (const match of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
+        const asset = sameOriginAsset(match[1])
+        if (asset) assetUrls.add(asset)
+      }
 
       await cache.addAll([...new Set([...APP_SHELL, ...assetUrls])])
       await self.skipWaiting()
@@ -69,12 +83,16 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((response) => {
           const copy = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put('/', copy))
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.put(`${BASE}index.html`, copy))
           return response
         })
         .catch(async () => {
-          const cached = await caches.match('/index.html')
-          return cached || caches.match('/')
+          return (
+            (await caches.match(`${BASE}index.html`)) ||
+            (await caches.match(BASE))
+          )
         }),
     )
     return

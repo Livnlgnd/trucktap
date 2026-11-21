@@ -5,7 +5,9 @@ shop/warehouse runners. Techs tap the parts they used on the van, then send a
 restock list in one step. The shop sees a live pick-list and a consolidated
 supplier order — online or offline.
 
-**Live website:** https://trucktap-blush.vercel.app
+**Live website:** https://livnlgnd.github.io/trucktap/
+
+Alternate deployment: https://trucktap-blush.vercel.app
 
 The repository contains a complete three-part product:
 
@@ -66,8 +68,9 @@ Desktop details:
 The backend is available in two deployment forms sharing the same API contract:
 
 - **Self-hosted:** TypeScript/Express + Node SQLite (`server/`)
-- **Hosted website:** Vercel Functions + Neon Postgres (`api/`), used by
-  https://trucktap-blush.vercel.app
+- **Hosted website:** Vercel Functions + Neon Postgres (`api/`), powering
+  https://trucktap-blush.vercel.app and the GitHub Pages frontend at
+  https://livnlgnd.github.io/trucktap/
 
 It provides:
 
@@ -151,4 +154,5 @@ npm run server:smoke
 database. `npm run build` also type-checks the serverless Postgres API in
 `api/`.
 
-The hosted website is deployed with `npm run deploy:web`.
+The hosted website is deployed with `npm run deploy:web`; the GitHub Pages
+mirror is published with `npm run deploy:pages`.
