@@ -20,6 +20,7 @@ import {
   type TruckTapLicenseState,
   type TruckTapPlanId,
 } from '../lib/license'
+import { isDesktopApp, WEBSITE_BASE } from '../lib/platform'
 import { cn, pluralize } from '../lib/utils'
 import { ConfirmDialog } from './ConfirmDialog'
 import type { ToastTone } from './Toast'
@@ -28,10 +29,15 @@ const BASE = import.meta.env.BASE_URL
 const CHECKOUT_BASE = `${BASE}checkout.html`
 const LICENSE_PAGE = `${BASE}license.html`
 const DOWNLOAD_PAGE = `${BASE}download.html`
+const LICENSE_API =
+  'https://keytrack-license.joshua-c77.workers.dev/api/trucktap/license'
 const PLAN_ORDER: TruckTapPlanId[] = ['starter', 'standard', 'advanced']
 
 function checkoutHref(plan: TruckTapPlanId): string {
-  return `${CHECKOUT_BASE}?plan=${plan}`
+  // The desktop app has no in-window checkout: open the hosted Stripe page in
+  // the user's browser. The web build uses the page next to the app.
+  const base = isDesktopApp() ? `${WEBSITE_BASE}checkout.html` : CHECKOUT_BASE
+  return `${base}?plan=${plan}`
 }
 
 function licenseDate(value: string | null): string {
@@ -130,6 +136,114 @@ function LicenseActivationForm({
       <p className="mt-2 text-center text-[10px] font-semibold leading-relaxed text-muted">
         Keys are verified offline on this device. No account needed.
       </p>
+    </form>
+  )
+}
+
+function RetrieveLicenseForm({
+  activate,
+  onToast,
+}: {
+  activate: (key: string) => Promise<TruckTapLicenseState>
+  onToast: (message: string, tone?: ToastTone) => void
+}) {
+  const [sessionId, setSessionId] = useState('')
+  const [company, setCompany] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (busy) return
+    const id = sessionId.trim()
+    if (!/^cs_/.test(id)) {
+      setError('Enter the Stripe checkout session ID from your receipt.')
+      return
+    }
+
+    setBusy(true)
+    setError('')
+
+    try {
+      const url = new URL(LICENSE_API)
+      url.searchParams.set('session_id', id)
+      const org = company.trim()
+      if (org) url.searchParams.set('company', org)
+
+      const response = await fetch(url.toString())
+      const data = (await response.json().catch(() => ({}))) as {
+        licenseKey?: string
+        error?: string
+      }
+      if (!response.ok || !data.licenseKey) {
+        throw new Error(data.error || 'That license could not be retrieved.')
+      }
+
+      const state = await activate(data.licenseKey)
+      onToast(`License activated: ${state.planName}.`, 'success')
+      setSessionId('')
+      setCompany('')
+    } catch (retrieveError) {
+      setError(
+        retrieveError instanceof Error
+          ? retrieveError.message
+          : 'That license could not be retrieved.',
+      )
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form onSubmit={(event) => void submit(event)}>
+      <label className="block">
+        <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+          Stripe checkout session ID
+        </span>
+        <input
+          value={sessionId}
+          onChange={(event) => setSessionId(event.target.value)}
+          spellCheck={false}
+          autoComplete="off"
+          placeholder="cs_live_..."
+          className="min-h-12 w-full rounded-xl border-2 border-line bg-page px-3 font-mono text-xs text-ink outline-none transition placeholder:text-muted/50 focus:border-accent focus:ring-4 focus:ring-accent/15"
+        />
+      </label>
+
+      <label className="mt-3 block">
+        <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+          Company <span className="font-semibold normal-case tracking-normal">(optional)</span>
+        </span>
+        <input
+          value={company}
+          onChange={(event) => setCompany(event.target.value)}
+          autoComplete="organization"
+          placeholder="Northside Electric"
+          className="min-h-12 w-full rounded-xl border-2 border-line bg-page px-3 text-sm text-ink outline-none transition placeholder:text-muted/50 focus:border-accent focus:ring-4 focus:ring-accent/15"
+        />
+      </label>
+
+      {error && (
+        <p
+          role="alert"
+          className="mt-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-700 dark:text-red-300"
+        >
+          {error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={busy}
+        className="mt-3 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl border border-line bg-page px-4 text-sm font-black text-ink transition hover:bg-panel-2 disabled:opacity-60"
+      >
+        {busy ? (
+          <LoaderCircle size={18} className="animate-spin" />
+        ) : (
+          <KeyRound size={18} className="text-accent" />
+        )}
+        {busy ? 'Retrieving license.' : 'Retrieve & activate'}
+      </button>
     </form>
   )
 }
@@ -359,6 +473,7 @@ export function LicenseView({
   const [removeOpen, setRemoveOpen] = useState(false)
   const [removing, setRemoving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const desktop = isDesktopApp()
 
   const confirmRemove = async () => {
     setRemoving(true)
@@ -394,8 +509,9 @@ export function LicenseView({
             Your TruckTap license
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Activate a one-time license, check your plan, or install the app on
-            another device.
+            {desktop
+              ? 'Activate a license, check your plan, or retrieve a purchase. Everything happens on this device.'
+              : 'Activate a one-time license, check your plan, or install the app on another device.'}
           </p>
         </div>
         <button
@@ -440,48 +556,71 @@ export function LicenseView({
           <section className="rounded-2xl border border-line bg-panel p-5">
             <div className="flex items-center gap-2">
               <Download size={19} className="text-accent" />
-              <h2 className="text-base font-black">Downloads & installs</h2>
+              <h2 className="text-base font-black">
+                {desktop ? 'This device' : 'Downloads & installs'}
+              </h2>
             </div>
-            <p className="mt-1 text-xs leading-relaxed text-muted">
-              Use the Windows installer or install the PWA on a phone, tablet,
-              or shop computer.
-            </p>
-            <div className="mt-4 space-y-2">
-              <a
-                href={DOWNLOAD_PAGE}
-                target="_blank"
-                rel="noreferrer"
-                className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-line bg-page px-4 text-sm font-bold transition hover:bg-panel-2"
-              >
-                <span className="flex items-center gap-2">
-                  <Download size={17} className="text-accent" />
-                  Download for Windows
-                </span>
-                <ExternalLink size={15} className="text-muted" />
-              </a>
-              <a
-                href={LICENSE_PAGE}
-                target="_blank"
-                rel="noreferrer"
-                className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-line bg-page px-4 text-sm font-bold transition hover:bg-panel-2"
-              >
-                <span className="flex items-center gap-2">
-                  <KeyRound size={17} className="text-accent" />
-                  Retrieve a purchased license
-                </span>
-                <ExternalLink size={15} className="text-muted" />
-              </a>
-              <a
-                href={BASE}
-                className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-line bg-page px-4 text-sm font-bold transition hover:bg-panel-2"
-              >
-                <span className="flex items-center gap-2">
-                  <ExternalLink size={17} className="text-accent" />
-                  TruckTap website
-                </span>
-                <ExternalLink size={15} className="text-muted" />
-              </a>
-            </div>
+
+            {desktop ? (
+              <>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  You are running the standalone Windows app. Activate, tap,
+                  and send restock lists here without opening the website.
+                </p>
+                <div className="mt-4 flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-xs font-bold text-success">
+                  <CheckCircle2 size={17} />
+                  Desktop app installed
+                </div>
+                <div className="mt-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted">
+                    Retrieve a purchased license
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                    Paste the Stripe checkout session ID from your receipt. The
+                    key is fetched and activated on this device.
+                  </p>
+                  <div className="mt-3">
+                    <RetrieveLicenseForm
+                      activate={activate}
+                      onToast={onToast}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  Use the Windows installer or install the PWA on a phone,
+                  tablet, or shop computer.
+                </p>
+                <div className="mt-4 space-y-2">
+                  <a
+                    href={DOWNLOAD_PAGE}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-line bg-page px-4 text-sm font-bold transition hover:bg-panel-2"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Download size={17} className="text-accent" />
+                      Download for Windows
+                    </span>
+                    <ExternalLink size={15} className="text-muted" />
+                  </a>
+                  <a
+                    href={LICENSE_PAGE}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-line bg-page px-4 text-sm font-bold transition hover:bg-panel-2"
+                  >
+                    <span className="flex items-center gap-2">
+                      <KeyRound size={17} className="text-accent" />
+                      Retrieve a purchased license
+                    </span>
+                    <ExternalLink size={15} className="text-muted" />
+                  </a>
+                </div>
+              </>
+            )}
           </section>
         </div>
 
@@ -500,6 +639,13 @@ export function LicenseView({
           <div className="mt-4">
             <PlanPurchaseCards />
           </div>
+          {desktop && (
+            <p className="mt-3 text-[10px] font-semibold leading-relaxed text-muted">
+              Secure Stripe checkout opens in your default browser. After
+              payment, return here and paste the session ID from your receipt
+              to activate.
+            </p>
+          )}
         </section>
       </div>
 
@@ -527,6 +673,8 @@ export function LicenseGate({
   activate: (key: string) => Promise<TruckTapLicenseState>
   onToast: (message: string, tone?: ToastTone) => void
 }) {
+  const desktop = isDesktopApp()
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-page px-4 py-10 text-ink">
       <div className="w-full max-w-2xl">
@@ -574,15 +722,29 @@ export function LicenseGate({
                   compact
                 />
               </div>
-              <a
-                href={LICENSE_PAGE}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
-              >
-                Need to retrieve your license?
-                <ExternalLink size={13} />
-              </a>
+              {desktop ? (
+                <details className="mt-3 rounded-xl border border-line bg-page/60 p-3">
+                  <summary className="cursor-pointer text-xs font-bold text-accent">
+                    Need to retrieve your license?
+                  </summary>
+                  <div className="mt-3">
+                    <RetrieveLicenseForm
+                      activate={activate}
+                      onToast={onToast}
+                    />
+                  </div>
+                </details>
+              ) : (
+                <a
+                  href={LICENSE_PAGE}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
+                >
+                  Need to retrieve your license?
+                  <ExternalLink size={13} />
+                </a>
+              )}
             </div>
 
             <div className="rounded-2xl border border-line bg-page/70 p-4">
@@ -620,28 +782,34 @@ export function LicenseGate({
                   )
                 })}
               </div>
-              <a
-                href={DOWNLOAD_PAGE}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-muted hover:text-ink"
-              >
-                <Download size={13} />
-                Download the desktop app
-              </a>
+              {!desktop && (
+                <a
+                  href={DOWNLOAD_PAGE}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-muted hover:text-ink"
+                >
+                  <Download size={13} />
+                  Download the desktop app
+                </a>
+              )}
             </div>
           </div>
         </div>
 
         <p className="mt-4 text-center text-[11px] font-semibold text-muted">
-          <button
-            type="button"
-            onClick={() => window.location.assign(BASE)}
-            className="hover:text-ink hover:underline"
-          >
-            Back to the website
-          </button>
-          <span className="mx-2 text-muted/40">·</span>
+          {!desktop && (
+            <>
+              <button
+                type="button"
+                onClick={() => window.location.assign(BASE)}
+                className="hover:text-ink hover:underline"
+              >
+                Back to the website
+              </button>
+              <span className="mx-2 text-muted/40">·</span>
+            </>
+          )}
           Support:{" "}
           <a
             href="https://github.com/Livnlgnd/trucktap/issues"

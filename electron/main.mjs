@@ -18,7 +18,7 @@ const ROOT_DIR = path.join(__dirname, '..')
 const DIST_DIR = path.join(ROOT_DIR, 'dist')
 const APP_SCHEME = 'trucktap'
 const APP_HOST = 'app'
-const APP_URL = `${APP_SCHEME}://${APP_HOST}/index.html`
+const APP_URL = `${APP_SCHEME}://${APP_HOST}/app.html`
 const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 const IS_DEV = Boolean(DEV_SERVER_URL)
 
@@ -328,7 +328,7 @@ function createWindow() {
   })
 
   if (IS_DEV) {
-    void mainWindow.loadURL(DEV_SERVER_URL)
+    void mainWindow.loadURL(`${DEV_SERVER_URL.replace(/\/$/, '')}/app.html`)
     if (process.env.TRUCKTAP_DEVTOOLS === '1') {
       mainWindow.webContents.openDevTools({ mode: 'detach' })
     }
