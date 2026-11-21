@@ -45,10 +45,15 @@ try {
     cwd: outputDir,
     stdio: 'inherit',
   })
-  execSync('git push --force origin gh-pages', {
-    cwd: outputDir,
-    stdio: 'inherit',
-  })
+  execSync(
+    'git -c credential.helper= -c "credential.https://github.com.helper=!gh auth git-credential" push --force origin gh-pages',
+    {
+      cwd: outputDir,
+      stdio: 'inherit',
+      env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
+      shell: true,
+    },
+  )
 
   console.log('GitHub Pages branch updated: gh-pages')
 } finally {
