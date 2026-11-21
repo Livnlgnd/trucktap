@@ -8,14 +8,16 @@ pick-lists, template management, local CSV export, and Team Sync.
 
 ## Hosted architecture
 
-- **Frontend/PWA:** Vite build deployed to GitHub Pages (subpath `/trucktap/`)
-  and Vercel (root)
+- **Landing page:** `/` — product overview, workflow, pricing, FAQ, and CTAs
+- **App:** `/app.html` — the installable PWA and full field/shop application
+- **Frontend/PWA:** Vite multi-page build deployed to GitHub Pages (subpath
+  `/trucktap/`) and Vercel (root)
 - **Team Sync API:** Vercel Functions in `api/`
 - **Database:** Neon Postgres, provisioned through the Vercel Neon integration
 - **Local persistence:** IndexedDB/Dexie remains the source of truth on each
   device; the sync queue flushes to the hosted API when online
-- **Service worker:** scoped to its deploy path, versioned by build, and never
-  caches `/api/` responses
+- **Service worker:** scoped to its deploy path, versioned by build, caches both
+  pages, and never caches `/api/` responses
 
 The GitHub Pages frontend calls the Vercel API cross-origin. CORS on the Vercel
 API allows `https://livnlgnd.github.io` and `trucktap://app` for the desktop app.

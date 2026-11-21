@@ -29,6 +29,14 @@ function serviceWorkerVersion(): Plugin {
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/',
   plugins: [react(), tailwindcss(), serviceWorkerVersion()],
+  build: {
+    rollupOptions: {
+      input: {
+        landing: path.resolve(process.cwd(), 'index.html'),
+        app: path.resolve(process.cwd(), 'app.html'),
+      },
+    },
+  },
   server: {
     watch: {
       ignored: ['**/release/**', '**/dist/**', '**/build/**'],

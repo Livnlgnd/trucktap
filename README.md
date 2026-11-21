@@ -7,6 +7,7 @@ supplier order — online or offline.
 
 **Live website:** https://livnlgnd.github.io/trucktap/
 
+The landing page lives at `/`; the installable app is at `/app.html`.
 Alternate deployment: https://trucktap-blush.vercel.app
 
 The repository contains a complete three-part product:
@@ -95,11 +96,12 @@ npm run build
 npm run preview
 ```
 
-The service worker is registered in production browser builds only. When the
-backend serves the PWA, both use the same origin and the service worker skips
-`/api/` responses so live team data is never cached as app shell. Use the
-backend-served build at `http://localhost:8787` to test Add to Home Screen and
-offline reloads.
+The landing page is served at `/` and the field app at `/app.html`. The service
+worker is registered by the app in production browser builds only. It caches
+both entry pages and their assets, while skipping `/api/` responses so live Team
+Sync data is never cached as app shell. Use the backend-served build at
+`http://localhost:8787` or either hosted site to test Add to Home Screen and
+offline app launches.
 
 ## Stack
 
@@ -114,6 +116,8 @@ offline reloads.
 
 ## What is included
 
+- **Marketing landing page** — product story, workflow, trade templates,
+  Team Sync, one-time pricing tiers, add-ons, FAQ, and install/download CTAs.
 - **Tech Clicker View** — van picker, optional job/unit tag, category filters,
   instant search, tactile cards, +1 tap, -1 tap, hold-to-undo, badge feedback,
   confirmation drawer, and daily tap reset.

@@ -3,6 +3,7 @@ const BASE = new URL('./', self.location.href).pathname
 const APP_SHELL = [
   BASE,
   `${BASE}index.html`,
+  `${BASE}app.html`,
   `${BASE}manifest.json`,
   `${BASE}icons/icon.svg`,
   `${BASE}icons/icon-192.png`,
@@ -26,18 +27,21 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME)
-      const shellResponse = await fetch(`${BASE}index.html`, {
-        cache: 'no-store',
-      })
-      await cache.put(`${BASE}index.html`, shellResponse.clone())
-
-      // Vite emits hashed asset filenames. Discover them from the production
-      // HTML so the complete app shell works offline after the first install.
-      const html = await shellResponse.text()
       const assetUrls = new Set()
-      for (const match of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
-        const asset = sameOriginAsset(match[1])
-        if (asset) assetUrls.add(asset)
+
+      for (const page of ['index.html', 'app.html']) {
+        const shellResponse = await fetch(`${BASE}${page}`, {
+          cache: 'no-store',
+        })
+        await cache.put(`${BASE}${page}`, shellResponse.clone())
+
+        // Vite emits hashed asset filenames. Discover them from each entry HTML
+        // so the complete site and installed app work offline after install.
+        const html = await shellResponse.text()
+        for (const match of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
+          const asset = sameOriginAsset(match[1])
+          if (asset) assetUrls.add(asset)
+        }
       }
 
       await cache.addAll([...new Set([...APP_SHELL, ...assetUrls])])
@@ -79,17 +83,19 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) return
 
   if (request.mode === 'navigate') {
+    const isAppRoute = url.pathname === `${BASE}app.html`
+    const cacheKey = isAppRoute ? `${BASE}app.html` : `${BASE}index.html`
+
     event.respondWith(
       fetch(request)
         .then((response) => {
           const copy = response.clone()
-          caches
-            .open(CACHE_NAME)
-            .then((cache) => cache.put(`${BASE}index.html`, copy))
+          caches.open(CACHE_NAME).then((cache) => cache.put(cacheKey, copy))
           return response
         })
         .catch(async () => {
           return (
+            (await caches.match(cacheKey)) ||
             (await caches.match(`${BASE}index.html`)) ||
             (await caches.match(BASE))
           )
