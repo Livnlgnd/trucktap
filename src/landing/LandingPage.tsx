@@ -37,9 +37,14 @@ import { cn } from '../lib/utils'
 
 const BASE = import.meta.env.BASE_URL
 const APP_HREF = `${BASE}app.html`
-const DOWNLOAD_HREF =
-  'https://github.com/Livnlgnd/trucktap/releases/download/v1.0.0/TruckTap-Setup-1.0.0.exe'
+const DOWNLOAD_HREF = `${BASE}download.html`
+const LICENSE_HREF = `${BASE}license.html`
+const CHECKOUT_HREF = `${BASE}checkout.html`
 const GITHUB_HREF = 'https://github.com/Livnlgnd/trucktap'
+
+function checkoutHref(planId: string): string {
+  return `${CHECKOUT_HREF}?plan=${planId}`
+}
 
 const navLinks = [
   { label: 'Why TruckTap', href: '#features' },
@@ -47,6 +52,7 @@ const navLinks = [
   { label: 'Pricing', href: '#pricing' },
   { label: 'Team Sync', href: '#team-sync' },
   { label: 'FAQ', href: '#faq' },
+  { label: 'Download', href: DOWNLOAD_HREF },
 ]
 
 const plans = [
@@ -519,13 +525,13 @@ function Hero() {
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 text-sm font-black text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-950"
               >
                 <Download size={18} />
-                Download for Windows
+                Download &amp; install
               </a>
             </div>
             <p className="mt-4 text-xs font-semibold text-slate-500">
               One-time licenses from <span className="font-black text-slate-800">$99</span>
               <span className="mx-1.5 text-slate-300">·</span>
-              No account required to start local
+              14-day free trial · No account required
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-600">
               <span className="inline-flex items-center gap-1.5">
@@ -1119,7 +1125,7 @@ function Pricing() {
                 ))}
               </ul>
               <a
-                href={APP_HREF}
+                href={checkoutHref(plan.id)}
                 className={cn(
                   'mt-7 flex min-h-14 items-center justify-center gap-2 rounded-xl text-sm font-black transition',
                   plan.featured
@@ -1127,7 +1133,7 @@ function Pricing() {
                     : 'border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50',
                 )}
               >
-                Choose {plan.name}
+                Buy {plan.name}
                 <ArrowRight size={16} />
               </a>
             </article>
@@ -1138,9 +1144,10 @@ function Pricing() {
           <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
             <p className="flex items-start gap-2 text-xs font-semibold leading-relaxed text-slate-500">
               <ShieldCheck size={16} className="mt-0.5 shrink-0 text-emerald-600" />
-              Every plan includes offline tapping, supplier CSV, local backups,
-              and desktop + PWA access. Optional maintenance renewals are
-              $49–$149/year and are never required to keep using the app.
+              Every plan includes a 14-day free trial, offline tapping, supplier
+              CSV, local backups, and desktop + PWA access. Optional maintenance
+              renewals are $49–$149/year and are never required to keep using the
+              app. Prices in USD.
             </p>
             <a
               href="#faq"
@@ -1316,7 +1323,10 @@ function Footer() {
                 Open web app
               </a>
               <a href={DOWNLOAD_HREF} className="hover:text-white">
-                Download Windows
+                Download &amp; install
+              </a>
+              <a href={LICENSE_HREF} className="hover:text-white">
+                License lookup
               </a>
               <a href="#pricing" className="hover:text-white">
                 Pricing
@@ -1328,9 +1338,18 @@ function Footer() {
           </div>
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
-              Resources
+              Company
             </p>
             <div className="mt-3 flex flex-col gap-2 text-sm font-semibold">
+              <a href={`${BASE}about.html`} className="hover:text-white">
+                About
+              </a>
+              <a href={`${BASE}support.html`} className="hover:text-white">
+                Support
+              </a>
+              <a href={GITHUB_HREF} className="hover:text-white">
+                GitHub
+              </a>
               <a
                 href={`${GITHUB_HREF}/blob/main/docs/BACKEND.md`}
                 className="hover:text-white"
@@ -1342,9 +1361,6 @@ function Footer() {
                 className="hover:text-white"
               >
                 License details
-              </a>
-              <a href={GITHUB_HREF} className="hover:text-white">
-                GitHub
               </a>
             </div>
           </div>
@@ -1367,7 +1383,18 @@ function Footer() {
         </div>
         <div className="mt-10 flex flex-col justify-between gap-3 border-t border-white/10 pt-6 text-[11px] font-semibold text-slate-500 sm:flex-row">
           <p>© 2026 TruckTap. All rights reserved.</p>
-          <p>Local-first · Desktop + PWA · Built for the field</p>
+          <div className="flex flex-wrap gap-4">
+            <a href={`${BASE}privacy.html`} className="hover:text-white">
+              Privacy
+            </a>
+            <a href={`${BASE}terms.html`} className="hover:text-white">
+              Terms
+            </a>
+            <a href={LICENSE_HREF} className="hover:text-white">
+              License lookup
+            </a>
+            <span>Local-first · Desktop + PWA</span>
+          </div>
         </div>
       </div>
     </footer>

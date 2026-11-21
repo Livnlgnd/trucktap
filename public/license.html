@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Get Your TruckTap License | License Delivery</title>
+    <meta
+      name="description"
+      content="Retrieve the signed TruckTap license for your purchase and download the app."
+    />
+    <meta name="robots" content="noindex,follow" />
+    <meta name="theme-color" content="#fffdf9" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./site.css" />
+    <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <a class="brand" href="./index.html">
+          <img src="./icons/icon.svg" alt="" width="40" height="40" />
+          <span>
+            <strong>TruckTap</strong>
+            <small>License delivery</small>
+          </span>
+        </a>
+        <nav class="site-nav">
+          <a class="hide-mobile" href="./index.html#pricing">Pricing</a>
+          <a href="./download.html">Download</a>
+          <a href="./app.html">Open app</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <div class="container">
+        <div class="split">
+          <div>
+            <p class="eyebrow">Already purchased</p>
+            <h1 style="margin-top: 12px">Get your signed license key.</h1>
+            <p class="lede">
+              If you just completed a Stripe checkout, this page will be filled
+              in automatically. If you are returning later, paste the checkout
+              session ID from your receipt.
+            </p>
+
+            <div class="notice" style="margin-top: 22px">
+              <strong>Where to find your checkout session ID</strong>
+              <p style="margin: 6px 0 0">
+                Stripe session IDs start with <strong>cs_live_</strong> or
+                <strong>cs_test_</strong>. You can also open the return link
+                from your Stripe receipt.
+              </p>
+            </div>
+
+            <div class="panel panel-soft" style="margin-top: 14px">
+              <h3 style="margin-top: 0">Already have your key?</h3>
+              <p class="muted small" style="margin-bottom: 12px">
+                Open TruckTap, choose <strong>License &amp; Downloads</strong>,
+                paste the key, and select Activate License.
+              </p>
+              <a class="button button-secondary" href="./app.html">Open TruckTap</a>
+            </div>
+
+            <p class="tiny muted" style="margin-top: 18px">
+              Need help? <a href="./support.html" style="color: var(--accent)">Visit support</a>.
+              Purchases are one-time and handled by Stripe.
+            </p>
+          </div>
+
+          <div class="panel">
+            <form id="license-form">
+              <label class="form-field">
+                <span>Stripe checkout session ID</span>
+                <input
+                  class="input"
+                  id="session-id"
+                  name="session_id"
+                  autocomplete="off"
+                  placeholder="cs_live_..."
+                />
+              </label>
+              <label class="form-field">
+                <span>Company or organization <span class="muted" style="font-weight: 500; text-transform: none; letter-spacing: 0">(optional)</span></span>
+                <input
+                  class="input"
+                  id="company"
+                  name="company"
+                  autocomplete="organization"
+                  placeholder="Northside Electric"
+                />
+                <small class="tiny muted" style="display: block; margin-top: 5px; text-transform: none; letter-spacing: 0">
+                  This appears on the license. If blank, we use the name from
+                  checkout.
+                </small>
+              </label>
+
+              <button class="button" id="get-license" type="submit" style="width: 100%">
+                Get my license
+              </button>
+            </form>
+
+            <div class="status" id="status" role="status"></div>
+
+            <div id="result" style="display: none; margin-top: 20px">
+              <label class="form-label" for="license-key">Your license key</label>
+              <textarea
+                class="license-key-box"
+                id="license-key"
+                readonly
+                rows="5"
+              ></textarea>
+              <div class="button-row" style="margin-top: 12px">
+                <button class="button" id="copy-key" type="button" style="min-height: 44px">
+                  Copy license key
+                </button>
+                <a class="button button-secondary" href="./app.html" style="min-height: 44px">
+                  Open TruckTap
+                </a>
+                <a class="button button-secondary" href="./index.html#pricing" style="min-height: 44px">
+                  View plans
+                </a>
+              </div>
+
+              <label class="notice" for="terms-agree" style="display: flex; gap: 10px; margin-top: 16px; cursor: pointer">
+                <input id="terms-agree" type="checkbox" style="margin-top: 3px" />
+                <span>
+                  I agree to the
+                  <a href="./terms.html" style="font-weight: 900; color: var(--accent)">Terms of Service</a>.
+                  TruckTap is licensed, not sold. The key may be used within the
+                  device and van limits of the purchased plan.
+                </span>
+              </label>
+
+              <a
+                id="download-app"
+                class="button button-dark"
+                href="https://github.com/Livnlgnd/trucktap/releases/download/v1.1.0/TruckTap-Setup-1.1.0.exe"
+                style="width: 100%; margin-top: 12px"
+                aria-disabled="true"
+              >
+                Download TruckTap for Windows
+              </a>
+              <p class="tiny muted" style="margin-top: 8px; text-align: center">
+                Or install the PWA from <a href="./download.html" style="color: var(--accent)">the download page</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer-inner">
+        <p>© 2026 TruckTap. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="./index.html">Home</a>
+          <a href="./download.html">Download</a>
+          <a href="./support.html">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./terms.html">Terms</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const LICENSE_API = 'https://keytrack-license.joshua-c77.workers.dev/api/trucktap/license'
+      const form = document.getElementById('license-form')
+      const sessionInput = document.getElementById('session-id')
+      const companyInput = document.getElementById('company')
+      const submitButton = document.getElementById('get-license')
+      const statusBox = document.getElementById('status')
+      const result = document.getElementById('result')
+      const licenseKey = document.getElementById('license-key')
+      const copyButton = document.getElementById('copy-key')
+      const terms = document.getElementById('terms-agree')
+      const downloadButton = document.getElementById('download-app')
+      const params = new URLSearchParams(window.location.search)
+      const sessionFromUrl = params.get('session_id')?.trim() || ''
+
+      if (sessionFromUrl) sessionInput.value = sessionFromUrl
+
+      function setStatus(message, tone) {
+        statusBox.textContent = message
+        statusBox.dataset.state = tone
+      }
+
+      function syncDownload() {
+        const allowed = Boolean(terms.checked)
+        downloadButton.setAttribute('aria-disabled', String(!allowed))
+        downloadButton.classList.toggle('opacity-50', !allowed)
+      }
+
+      async function fetchLicense() {
+        const sessionId = sessionInput.value.trim()
+        const company = companyInput.value.trim()
+
+        if (!/^cs_/.test(sessionId)) {
+          setStatus('Enter the Stripe checkout session ID from your receipt.', 'error')
+          return
+        }
+
+        submitButton.disabled = true
+        submitButton.textContent = 'Verifying checkout…'
+        setStatus('Checking payment and signing your license…', 'loading')
+
+        try {
+          const url = new URL(LICENSE_API)
+          url.searchParams.set('session_id', sessionId)
+          if (company) url.searchParams.set('company', company)
+
+          const response = await fetch(url.toString())
+          const data = await response.json().catch(() => ({}))
+          if (!response.ok) {
+            throw new Error(data.error || 'That license could not be issued.')
+          }
+
+          licenseKey.value = data.licenseKey
+          result.style.display = 'block'
+          setStatus(
+            'License ready for ' + data.company + '. Copy the key and activate it in TruckTap.',
+            'success',
+          )
+          copyButton.focus()
+        } catch (error) {
+          setStatus(
+            error instanceof Error ? error.message : 'That license could not be issued.',
+            'error',
+          )
+        } finally {
+          submitButton.disabled = false
+          submitButton.textContent = 'Get my license'
+        }
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault()
+        void fetchLicense()
+      })
+
+      copyButton.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(licenseKey.value)
+          copyButton.textContent = 'Copied'
+          window.setTimeout(() => {
+            copyButton.textContent = 'Copy license key'
+          }, 1800)
+        } catch {
+          licenseKey.select()
+          document.execCommand('copy')
+        }
+      })
+
+      terms.addEventListener('change', syncDownload)
+      downloadButton.addEventListener('click', (event) => {
+        if (!terms.checked) {
+          event.preventDefault()
+          terms.focus()
+          terms.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      })
+      syncDownload()
+
+      if (sessionFromUrl) {
+        void fetchLicense()
+      }
+    </script>
+  </body>
+</html>

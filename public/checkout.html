@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout — TruckTap</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#fffdf9" />
+    <script src="https://js.stripe.com/dahlia/stripe.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./site.css" />
+    <style>
+      .checkout-page {
+        display: grid;
+        min-height: calc(100vh - 140px);
+        place-items: center;
+        padding: 40px 0 68px;
+      }
+      .checkout-shell {
+        width: min(860px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+      .checkout-card {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 26px 80px -45px rgba(15, 23, 42, 0.45);
+      }
+      .checkout-head {
+        border-bottom: 1px solid var(--line);
+        padding: 26px 28px;
+      }
+      .checkout-head h1 {
+        margin: 0 0 6px;
+        font-size: 26px;
+        letter-spacing: -0.035em;
+      }
+      .checkout-body {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        padding: 26px 28px 30px;
+      }
+      .checkout-options {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .plan-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        border: 2px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+        cursor: pointer;
+        transition:
+          border 120ms ease,
+          background 120ms ease;
+      }
+      .plan-option:hover {
+        border-color: #fdba74;
+        background: #fffaf5;
+      }
+      .plan-option.is-selected {
+        border-color: var(--accent);
+        background: #fff7ed;
+      }
+      .plan-option input {
+        margin-top: 4px;
+        accent-color: var(--accent);
+      }
+      .plan-option strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 900;
+      }
+      .plan-option small {
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.55;
+      }
+      .plan-option .option-price {
+        margin-left: auto;
+        padding-left: 10px;
+        color: var(--ink);
+        font-size: 16px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+      .checkout-side {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .stripe-wrap {
+        min-height: 150px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #fff;
+        padding: 16px;
+      }
+      #checkout-form {
+        min-height: 100px;
+      }
+      .checkout-footer-note {
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.6;
+        text-align: center;
+      }
+      @media (max-width: 760px) {
+        .checkout-body {
+          grid-template-columns: 1fr;
+          padding: 20px;
+        }
+        .checkout-head {
+          padding: 20px;
+        }
+        .checkout-page {
+          padding-top: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <a class="brand" href="./index.html">
+          <img src="./icons/icon.svg" alt="" width="40" height="40" />
+          <span>
+            <strong>TruckTap</strong>
+            <small>Secure license checkout</small>
+          </span>
+        </a>
+        <nav class="site-nav">
+          <a class="hide-mobile" href="./index.html#pricing">Pricing</a>
+          <a href="./license.html">License lookup</a>
+          <a href="./app.html">Open app</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="checkout-page">
+      <div class="checkout-shell">
+        <div class="checkout-card">
+          <div class="checkout-head">
+            <p class="eyebrow">One-time license</p>
+            <h1>Complete your purchase</h1>
+            <p class="muted small" style="margin: 0">
+              Secure payment is handled by Stripe. You’ll get your license key
+              immediately after checkout.
+            </p>
+          </div>
+
+          <div class="checkout-body">
+            <div class="checkout-options" id="plan-options">
+              <label class="plan-option">
+                <input type="radio" name="plan" value="starter" />
+                <span>
+                  <strong>Starter</strong>
+                  <small>Up to 3 vans · 1 shop workstation · 12 months of updates</small>
+                </span>
+                <span class="option-price">$99</span>
+              </label>
+              <label class="plan-option">
+                <input type="radio" name="plan" value="standard" />
+                <span>
+                  <strong>Standard</strong>
+                  <small>Up to 10 vans · 3 shop workstations · 12 months of updates</small>
+                </span>
+                <span class="option-price">$199</span>
+              </label>
+              <label class="plan-option">
+                <input type="radio" name="plan" value="advanced" />
+                <span>
+                  <strong>Advanced</strong>
+                  <small>Unlimited vans · site license · 24 months of updates</small>
+                </span>
+                <span class="option-price">$399</span>
+              </label>
+
+              <div class="plan-summary" style="margin-top: 6px">
+                <div>
+                  <strong id="summary-name">Standard license</strong>
+                  <span id="summary-note">One-time · per shop · no mandatory subscription</span>
+                </div>
+                <div class="plan-price">
+                  <span id="summary-price">$199</span>
+                  <small>USD</small>
+                </div>
+              </div>
+
+              <button class="button" id="continue" type="button" style="width: 100%">
+                Continue to secure payment
+              </button>
+              <p class="checkout-footer-note">
+                By purchasing, you agree to the
+                <a href="./terms.html" style="color: var(--accent)">Terms of Service</a>.
+                Need a different plan? <a href="./index.html#pricing" style="color: var(--accent)">Compare plans</a>.
+              </p>
+            </div>
+
+            <div class="checkout-side">
+              <div class="stripe-wrap">
+                <div id="checkout-form"></div>
+                <div id="status" class="status" data-state="loading" style="margin-top: 0">
+                  Preparing secure checkout…
+                </div>
+              </div>
+              <div class="notice">
+                <strong>Secure checkout by Stripe.</strong> TruckTap never sees
+                your card details. The purchase is a one-time charge. Optional
+                maintenance renewals and Team Sync are separate.
+              </div>
+              <div class="secure-line">
+                <span aria-hidden="true">🔒</span>
+                <span>Encrypted checkout · No account required</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer-inner">
+        <p>© 2026 TruckTap. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="./index.html">Home</a>
+          <a href="./license.html">License lookup</a>
+          <a href="./support.html">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./terms.html">Terms</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const WORKER = 'https://keytrack-license.joshua-c77.workers.dev'
+      const STRIPE_PUBLISHABLE_KEY =
+        'pk_live_51UXQwhPlnAdoCAVXG0IQQwGGlUNnfdVokvkPB3RDBBbgG5qgQUINZfFGtq21wN2ITwR7eJfqxnZE9vNYQNglyr4n00MwHueF9D'
+      const PLANS = [
+        {
+          id: 'starter',
+          name: 'Starter',
+          price: 99,
+          note: 'Up to 3 vans · 1 shop workstation',
+        },
+        {
+          id: 'standard',
+          name: 'Standard',
+          price: 199,
+          note: 'Up to 10 vans · 3 shop workstations',
+        },
+        {
+          id: 'advanced',
+          name: 'Advanced',
+          price: 399,
+          note: 'Unlimited vans · site license',
+        },
+      ]
+
+      const statusBox = document.getElementById('status')
+      const continueButton = document.getElementById('continue')
+      const summaryName = document.getElementById('summary-name')
+      const summaryNote = document.getElementById('summary-note')
+      const summaryPrice = document.getElementById('summary-price')
+      const formContainer = document.getElementById('checkout-form')
+      const radios = [...document.querySelectorAll('input[name="plan"]')]
+      const requested = new URLSearchParams(window.location.search).get('plan')
+      let checkoutReady = false
+
+      function setStatus(message, state) {
+        statusBox.textContent = message
+        statusBox.dataset.state = state
+      }
+
+      function selectedPlan() {
+        return (
+          PLANS.find((plan) => plan.id === (radios.find((r) => r.checked)?.value ?? '')) ??
+          PLANS[1]
+        )
+      }
+
+      function updateSummary() {
+        const plan = selectedPlan()
+        summaryName.textContent = plan.name + ' license'
+        summaryNote.textContent = plan.note + ' · one-time per shop'
+        summaryPrice.textContent = '$' + plan.price
+        for (const radio of radios) {
+          radio.closest('.plan-option').classList.toggle(
+            'is-selected',
+            radio.checked,
+          )
+        }
+      }
+
+      async function mountCheckout(planId) {
+        if (checkoutReady) return
+        checkoutReady = true
+        continueButton.disabled = true
+        radios.forEach((radio) => (radio.disabled = true))
+        setStatus('Preparing secure checkout…', 'loading')
+
+        try {
+          const response = await fetch(WORKER + '/api/trucktap/checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan: planId }),
+          })
+          const payload = await response.json().catch(() => ({}))
+          if (!response.ok || !payload.client_secret) {
+            throw new Error(payload.error || 'Unable to start checkout.')
+          }
+
+          const stripe = Stripe(STRIPE_PUBLISHABLE_KEY)
+          const checkout = stripe.initCheckoutFormSdk({
+            clientSecret: payload.client_secret,
+            appearance: {
+              theme: 'stripe',
+              labels: 'auto',
+              inputs: 'spaced',
+              variables: {
+                borderRadius: '8px',
+                colorBackground: '#ffffff',
+                colorDanger: '#b91c1c',
+                colorPrimary: '#c2410c',
+                colorSuccess: '#15803d',
+                colorText: '#0f172a',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                fontSizeBase: '15px',
+                spacingUnit: '4px',
+              },
+            },
+          })
+          const form = checkout.createForm({ layout: 'expanded' })
+          form.mount('#checkout-form')
+
+          const actionsResult = await checkout.loadActions()
+          if (actionsResult.type !== 'success') {
+            throw new Error('Unable to load the payment form.')
+          }
+
+          form.on('confirm', async (event) => {
+            try {
+              await actionsResult.actions.confirm({
+                formConfirmEvent: event,
+              })
+            } catch (error) {
+              setStatus(
+                error instanceof Error ? error.message : 'Payment confirmation failed.',
+                'error',
+              )
+              checkoutReady = false
+              continueButton.disabled = false
+              radios.forEach((radio) => (radio.disabled = false))
+            }
+          })
+
+          setStatus('Payment form ready. Complete checkout to receive your license.', 'ready')
+          continueButton.textContent = 'Payment form ready below'
+        } catch (error) {
+          checkoutReady = false
+          continueButton.disabled = false
+          radios.forEach((radio) => (radio.disabled = false))
+          setStatus(
+            error instanceof Error ? error.message : 'Unable to load checkout.',
+            'error',
+          )
+        }
+      }
+
+      const initial = PLANS.some((plan) => plan.id === requested)
+        ? requested
+        : 'standard'
+      radios.find((radio) => radio.value === initial).checked = true
+      updateSummary()
+
+      radios.forEach((radio) =>
+        radio.addEventListener('change', () => {
+          if (checkoutReady) return
+          updateSummary()
+        }),
+      )
+      continueButton.addEventListener('click', () => {
+        void mountCheckout(selectedPlan().id)
+      })
+    </script>
+  </body>
+</html>

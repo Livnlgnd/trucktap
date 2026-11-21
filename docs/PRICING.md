@@ -51,9 +51,23 @@ subscriptions.
 - Without a hosted licensing check, enforcement is honor-system plus signed
   keys and van-count limits. Do not make the field workflow hostile to
   legitimate customers.
-- Payment collection can happen through a merchant of record (e.g. Lemon
-  Squeezy or Paddle) with keys issued after purchase. The licensing flow is not
-  yet implemented in the app.
+- Payment collection is handled by Stripe Checkout through the hosted
+  TruckTap endpoints on the existing license Worker. A signed `TAP-...` key is
+  issued after payment and is verified offline by the app.
+- New installs start a 14-day local trial. After the trial ends, a valid
+  signed license is required. Local data is never deleted.
+
+## Purchase and license flow
+
+1. Choose a plan on the landing page and open `checkout.html?plan=...`.
+2. The page creates a Stripe Checkout session through
+   `POST /api/trucktap/checkout-session` on
+   `https://keytrack-license.joshua-c77.workers.dev`.
+3. After payment, Stripe returns to `license.html?session_id=...`.
+4. `GET /api/trucktap/license` verifies the paid session and signs a TruckTap
+   ECDSA P-256 license key. Issued keys are cached in the Worker's D1 database.
+5. The customer copies the key into **License & Downloads** in the app, where
+   it is verified with the shipped public key.
 
 ## Implementation status
 
@@ -62,10 +76,13 @@ Implemented:
 - Team Sync backend with accounts, workspaces, join codes, roles, and sync
 - Desktop app and PWA integration
 - Optional hosted Team Sync flow in the Team Sync view
+- Offline signed license keys, 14-day trial, activation gate, and
+  License & Downloads view
+- Live Stripe checkout and license delivery endpoints on the license Worker
+- Website checkout, license lookup, download, support, about, privacy, and
+  terms pages
 
 Still required for commercial launch:
 
-1. Add the offline license activation screen and signed license keys.
-2. Add van management and enforce purchased van limits.
-3. Add configurable checkout links and payment-provider webhooks.
-4. Connect Team Sync plan billing to the hosted backend.
+1. Enforce purchased van limits in the app UI beyond the current plan display.
+2. Connect Team Sync plan billing to the hosted backend.

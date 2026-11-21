@@ -1,4 +1,4 @@
-export type AppView = 'tech' | 'shop' | 'manage' | 'team'
+export type AppView = 'tech' | 'shop' | 'manage' | 'team' | 'license'
 
 export type OrderStatus = 'pending' | 'picked' | 'restocked'
 

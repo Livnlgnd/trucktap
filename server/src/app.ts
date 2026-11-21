@@ -19,22 +19,40 @@ app.use(
       ? {
           directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: [
+              "'self'",
+              "'unsafe-inline'",
+              'https://js.stripe.com',
+              'https://*.stripe.com',
+              'https://*.stripe.network',
+            ],
             styleSrc: [
               "'self'",
               "'unsafe-inline'",
               'https://fonts.googleapis.com',
             ],
-            imgSrc: ["'self'", 'data:'],
+            imgSrc: ["'self'", 'data:', 'https://*.stripe.com'],
             fontSrc: [
               "'self'",
               'data:',
               'https://fonts.gstatic.com',
             ],
-            connectSrc: ["'self'"],
+            connectSrc: [
+              "'self'",
+              'https://keytrack-license.joshua-c77.workers.dev',
+              'https://api.stripe.com',
+              'https://*.stripe.com',
+              'https://*.stripe.network',
+            ],
+            frameSrc: [
+              'https://js.stripe.com',
+              'https://*.stripe.com',
+              'https://*.stripe.network',
+            ],
             manifestSrc: ["'self'"],
             workerSrc: ["'self'"],
             frameAncestors: ["'none'"],
+            formAction: ["'self'", 'https://*.stripe.com'],
           },
         }
       : false,

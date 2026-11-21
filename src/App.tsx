@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { LoaderCircle, RefreshCw, Truck, WifiOff } from 'lucide-react'
+import { LoaderCircle, RefreshCw, Truck, WifiOff, KeyRound } from 'lucide-react'
 import type { AppView } from './types'
 import {
   db,
@@ -9,11 +9,14 @@ import {
 import { useTheme } from './hooks/useTheme'
 import { useOnlineStatus } from './hooks/useOnlineStatus'
 import { useTeamSync } from './hooks/useTeamSync'
+import { useLicense } from './hooks/useLicense'
+import { licenseCanUseApp } from './lib/license'
 import { TopBar } from './components/TopBar'
 import { TechView } from './components/TechView'
 import { ShopPickListView } from './components/ShopPickListView'
 import { TemplateManager } from './components/TemplateManager'
 import { TeamSyncView } from './components/TeamSyncView'
+import { LicenseGate, LicenseView } from './components/LicenseView'
 import { Toast, type ToastData, type ToastTone } from './components/Toast'
 
 const VIEW_KEY = 'trucktap.view'
@@ -26,7 +29,8 @@ function getStoredView(): AppView {
       value === 'tech' ||
       value === 'shop' ||
       value === 'manage' ||
-      value === 'team'
+      value === 'team' ||
+      value === 'license'
     ) {
       return value
     }
@@ -58,6 +62,7 @@ function App() {
     toggleSimulatedOffline,
   } = useOnlineStatus()
   const teamSync = useTeamSync(isOnline, ready)
+  const license = useLicense(ready)
 
   const vans = useLiveQuery(() => db.vans.orderBy('name').toArray(), [])
 
@@ -146,7 +151,7 @@ function App() {
     )
   }
 
-  if (!ready || !vans || !activeVan) {
+  if (!ready || !vans || !activeVan || license.loading || !license.state) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-page px-6 text-center text-ink">
         <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-accent text-accent-ink shadow-2xl">
@@ -158,6 +163,19 @@ function App() {
         </p>
         <LoaderCircle size={24} className="mt-6 animate-spin text-accent" />
       </div>
+    )
+  }
+
+  if (!licenseCanUseApp(license.state)) {
+    return (
+      <>
+        <LicenseGate
+          state={license.state}
+          activate={license.activate}
+          onToast={showToast}
+        />
+        <Toast toast={toast} />
+      </>
     )
   }
 
@@ -174,6 +192,30 @@ function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
       />
+
+      {license.state.source === 'trial' &&
+        !license.state.trialExpired &&
+        view !== 'license' && (
+          <div className="border-b border-accent/20 bg-accent/10">
+            <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-3 py-2 text-[11px] font-bold text-ink sm:px-6">
+              <KeyRound size={14} className="shrink-0 text-accent" />
+              <span>
+                Free trial ·{' '}
+                <strong className="font-black">
+                  {license.state.trialDaysLeft}{' '}
+                  {license.state.trialDaysLeft === 1 ? 'day' : 'days'} left
+                </strong>
+              </span>
+              <button
+                type="button"
+                onClick={() => setView('license')}
+                className="ml-auto shrink-0 rounded-full border border-accent/30 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-accent transition hover:bg-accent/10"
+              >
+                Activate license
+              </button>
+            </div>
+          </div>
+        )}
 
       {!isOnline && (
         <div className="border-b border-warn/25 bg-warn/10">
@@ -221,6 +263,15 @@ function App() {
         )}
         {view === 'team' && (
           <TeamSyncView controller={teamSync} onToast={showToast} />
+        )}
+        {view === 'license' && (
+          <LicenseView
+            state={license.state}
+            activate={license.activate}
+            remove={license.remove}
+            refresh={license.refresh}
+            onToast={showToast}
+          />
         )}
       </main>
 

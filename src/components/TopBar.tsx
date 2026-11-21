@@ -5,6 +5,7 @@ import {
   Cloud,
   CloudOff,
   CloudUpload,
+  KeyRound,
   LoaderCircle,
   Moon,
   Sun,
@@ -28,13 +29,13 @@ const VIEWS: Array<{
   {
     id: 'tech',
     label: 'Tech Clicker View',
-    mobileLabel: 'Tech Clicker',
+    mobileLabel: 'Tech',
     icon: Wrench,
   },
   {
     id: 'shop',
     label: 'Shop Pick-List View',
-    mobileLabel: 'Shop Pick-List',
+    mobileLabel: 'Shop',
     icon: ClipboardList,
   },
   {
@@ -48,6 +49,12 @@ const VIEWS: Array<{
     label: 'Team Sync',
     mobileLabel: 'Team',
     icon: Users,
+  },
+  {
+    id: 'license',
+    label: 'License & Downloads',
+    mobileLabel: 'License',
+    icon: KeyRound,
   },
 ]
 
@@ -231,7 +238,7 @@ export function TopBar({
 
         <nav
           aria-label="Role and view"
-          className="mb-3 grid grid-cols-4 gap-1 rounded-2xl border border-line bg-panel p-1 shadow-sm"
+          className="mb-3 grid grid-cols-5 gap-1 rounded-2xl border border-line bg-panel p-1 shadow-sm"
         >
           {VIEWS.map(({ id, label, mobileLabel, icon: Icon }) => {
             const selected = id === view
