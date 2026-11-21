@@ -1,0 +1,20 @@
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+const isDesktop = Boolean(window.trucktapDesktop?.isDesktop)
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isDesktop) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js').catch(() => {
+      // The app remains fully usable without a service worker.
+    })
+  })
+}

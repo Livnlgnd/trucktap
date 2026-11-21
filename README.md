@@ -1,0 +1,143 @@
+# TruckTap — Van & Truck Restock Clicker
+
+TruckTap is a local-first restock app for field service technicians and
+shop/warehouse runners. Techs tap the parts they used on the van, then send a
+restock list in one step. The shop sees a live pick-list and a consolidated
+supplier order — online or offline.
+
+The repository now contains a complete three-part product:
+
+- **Windows desktop app** packaged with Electron
+- **Installable PWA** for browsers and phones
+- **Team Sync backend** with accounts, workspaces, roles, and real multi-device sync
+
+## Quick start — full stack
+
+```bash
+npm run install:all      # root + server dependencies
+npm run dev:full         # API :8787 + PWA dev server :5173
+```
+
+Open **http://127.0.0.1:5173** for the web app. The backend health check is at
+**http://127.0.0.1:8787/api/health**.
+
+To serve the built PWA and API from one production-style server:
+
+```bash
+npm run build
+npm run server:start     # builds the backend, serves dist + API on :8787
+```
+
+Open **http://localhost:8787**.
+
+## Desktop app
+
+```bash
+npm run desktop:dev      # API + Vite + Electron with hot reload
+npm run desktop:stack    # API + production build + Electron
+npm run desktop:start    # desktop app only (start the API separately)
+npm run desktop:pack     # unpacked Windows app in release/win-unpacked/
+npm run desktop:dist     # Windows installer in release/
+```
+
+The prebuilt installer is:
+
+```text
+release/TruckTap-Setup-1.0.0.exe
+```
+
+Desktop details:
+
+- Native window with persisted size/position, menu bar, single-instance lock,
+  and external-link protection.
+- Rendered through a secure custom `trucktap://` protocol from built assets.
+- Context isolation + sandboxed preload; Node integration is disabled.
+- IndexedDB and the sync queue live in the app's user-data folder. Use
+  **Help → Open Data Folder** in the desktop menu to open it.
+- No service worker inside Electron; packaged assets are local.
+- Team Sync connects to the backend at `http://127.0.0.1:8787` by default.
+  The server address can be changed in **Team Sync → Server settings** while
+  signed out, or set at build time with `VITE_API_URL`.
+
+## Team Sync backend
+
+The backend is a TypeScript/Express service backed by Node's built-in SQLite.
+It provides:
+
+- Owner, shop, and tech accounts
+- Workspace creation with atomic local-board import
+- 8-character join codes for teammates
+- Member role management and removal
+- Idempotent push of offline operations
+- Full workspace snapshot pulls
+- ~8-second polling for remote changes
+- Optional same-origin serving of the built PWA
+
+Full setup, API, environment, Docker, and security details are in
+[docs/BACKEND.md](docs/BACKEND.md).
+
+## PWA / web app
+
+```bash
+npm run dev
+npm run build
+npm run preview
+```
+
+The service worker is registered in production browser builds only. When the
+backend serves the PWA, both use the same origin and the service worker skips
+`/api/` responses so live team data is never cached as app shell. Use the
+backend-served build at `http://localhost:8787` to test Add to Home Screen and
+offline reloads.
+
+## Stack
+
+- React 19 + Vite + TypeScript
+- Tailwind CSS v4
+- Dexie / IndexedDB with a transactional offline sync queue
+- `dexie-react-hooks` live queries
+- `lucide-react` icons
+- Electron + electron-builder for Windows
+- Express 5 + Zod + `node:sqlite` for Team Sync
+- Installable PWA manifest + versioned service worker
+
+## What is included
+
+- **Tech Clicker View** — van picker, optional job/unit tag, category filters,
+  instant search, tactile cards, +1 tap, -1 tap, hold-to-undo, badge feedback,
+  confirmation drawer, and daily tap reset.
+- **Shop Pick-List View** — live metrics, per-van pick lists, item check-off,
+  mark-restocked flow, consolidated supplier table, and CSV export.
+- **Manage Van Templates** — add/edit/delete parts, set par levels, clear tap
+  counts, and load Electrical, Plumbing, or Multifamily starter templates.
+- **Team Sync** — create or join a shared workspace, invite via join code,
+  manage members, monitor queue/sync state, and push data across devices.
+- **Offline UX** — every local write commits to IndexedDB plus the sync queue in
+  one transaction. Taps keep counting in dead zones; queued operations sync when
+  the server is reachable. Remote updates wait while local operations are queued.
+- **Seeded demo data** — three vans, 24 default electrical/general parts per
+  van, pending orders, and a completed restock.
+- **Commercial packaging** — see [docs/PRICING.md](docs/PRICING.md) for one-time
+  Starter/Standard/Advanced licenses and the optional Team Sync add-on.
+
+## Data model
+
+`src/db.ts` owns the local IndexedDB schema and all writes. The `syncQueue`
+stores an operation ID, action, entity, payload, timestamp, retry state, and
+local error message. `src/hooks/useTeamSync.ts` pushes queued operations,
+acknowledges only accepted IDs, and pulls server snapshots into Dexie.
+
+`server/src/db.ts` owns the SQLite schema: organizations, users, memberships,
+vans, parts, orders, and applied sync operations. Client operation IDs make
+pushes idempotent, and each organization is scoped independently.
+
+## Verification
+
+```bash
+npm run build
+npm run lint
+npm run server:smoke
+```
+
+`server:smoke` builds and runs API integration tests against an isolated SQLite
+database.

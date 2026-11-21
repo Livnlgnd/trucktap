@@ -1,0 +1,232 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { LoaderCircle, RefreshCw, Truck, WifiOff } from 'lucide-react'
+import type { AppView } from './types'
+import {
+  db,
+  initializeDatabase,
+} from './db'
+import { useTheme } from './hooks/useTheme'
+import { useOnlineStatus } from './hooks/useOnlineStatus'
+import { useTeamSync } from './hooks/useTeamSync'
+import { TopBar } from './components/TopBar'
+import { TechView } from './components/TechView'
+import { ShopPickListView } from './components/ShopPickListView'
+import { TemplateManager } from './components/TemplateManager'
+import { TeamSyncView } from './components/TeamSyncView'
+import { Toast, type ToastData, type ToastTone } from './components/Toast'
+
+const VIEW_KEY = 'trucktap.view'
+const VAN_KEY = 'trucktap.active-van'
+
+function getStoredView(): AppView {
+  try {
+    const value = window.localStorage.getItem(VIEW_KEY)
+    if (
+      value === 'tech' ||
+      value === 'shop' ||
+      value === 'manage' ||
+      value === 'team'
+    ) {
+      return value
+    }
+  } catch {
+    // Use the default.
+  }
+  return 'tech'
+}
+
+function getStoredVanId(): string {
+  try {
+    return window.localStorage.getItem(VAN_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function App() {
+  const [ready, setReady] = useState(false)
+  const [initError, setInitError] = useState('')
+  const [view, setView] = useState<AppView>(getStoredView)
+  const [activeVanId, setActiveVanId] = useState(getStoredVanId)
+  const [toast, setToast] = useState<ToastData | null>(null)
+  const toastTimer = useRef<number | null>(null)
+  const { theme, toggleTheme } = useTheme()
+  const {
+    isOnline,
+    simulatedOffline,
+    toggleSimulatedOffline,
+  } = useOnlineStatus()
+  const teamSync = useTeamSync(isOnline, ready)
+
+  const vans = useLiveQuery(() => db.vans.orderBy('name').toArray(), [])
+
+  const activeVan =
+    vans?.find((van) => van.id === activeVanId) ?? vans?.[0] ?? null
+
+  useEffect(() => {
+    let cancelled = false
+    initializeDatabase()
+      .then(() => {
+        if (!cancelled) setReady(true)
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setInitError(
+            error instanceof Error
+              ? error.message
+              : 'The local database could not be opened.',
+          )
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(VIEW_KEY, view)
+    } catch {
+      // View preference is non-critical.
+    }
+  }, [view])
+
+  useEffect(() => {
+    if (!activeVan) return
+    try {
+      window.localStorage.setItem(VAN_KEY, activeVan.id)
+    } catch {
+      // Van preference is non-critical.
+    }
+  }, [activeVan])
+
+  useEffect(
+    () => () => {
+      if (toastTimer.current !== null) window.clearTimeout(toastTimer.current)
+    },
+    [],
+  )
+
+  const showToast = useCallback(
+    (message: string, tone: ToastTone = 'info') => {
+      if (toastTimer.current !== null) window.clearTimeout(toastTimer.current)
+      setToast({ id: Date.now(), message, tone })
+      toastTimer.current = window.setTimeout(() => setToast(null), 4200)
+    },
+    [],
+  )
+
+  if (initError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-page px-4 text-ink">
+        <div className="w-full max-w-md rounded-3xl border border-line bg-panel p-6 text-center shadow-xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400">
+            <WifiOff size={28} />
+          </div>
+          <h1 className="mt-4 text-2xl font-black">Local storage is blocked</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            TruckTap stores everything in IndexedDB on this device. Allow site
+            data or leave private browsing, then reload.
+          </p>
+          <p className="mt-3 rounded-xl bg-page px-3 py-2 font-mono text-[11px] text-muted">
+            {initError}
+          </p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-5 flex min-h-16 w-full items-center justify-center gap-2 rounded-2xl bg-accent px-5 text-sm font-black uppercase tracking-wide text-accent-ink"
+          >
+            <RefreshCw size={19} />
+            Reload TruckTap
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!ready || !vans || !activeVan) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-page px-6 text-center text-ink">
+        <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-accent text-accent-ink shadow-2xl">
+          <Truck size={42} />
+        </div>
+        <h1 className="mt-5 text-3xl font-black tracking-tight">TruckTap</h1>
+        <p className="mt-2 text-sm font-semibold text-muted">
+          Opening your offline van board…
+        </p>
+        <LoaderCircle size={24} className="mt-6 animate-spin text-accent" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-page text-ink">
+      <TopBar
+        view={view}
+        onViewChange={setView}
+        isOnline={isOnline}
+        simulatedOffline={simulatedOffline}
+        onToggleSimulatedOffline={toggleSimulatedOffline}
+        queueCount={teamSync.queueCount}
+        syncStatus={teamSync.status}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+      />
+
+      {!isOnline && (
+        <div className="border-b border-warn/25 bg-warn/10">
+          <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-3 py-2 text-[11px] font-bold text-warn sm:px-6">
+            <WifiOff size={14} className="shrink-0" />
+            <span>
+              Offline mode — every tap saves on this device and queues for sync.
+            </span>
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              {teamSync.session && teamSync.queueCount > 0 && (
+                <span className="rounded-full border border-warn/30 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide">
+                  {teamSync.queueCount} queued
+                </span>
+              )}
+              {simulatedOffline && (
+                <span className="hidden rounded-full border border-warn/30 px-2 py-0.5 text-[9px] uppercase tracking-wide sm:inline">
+                  Simulated test
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
+        {view === 'tech' && (
+          <TechView
+            key={activeVan.id}
+            vans={vans}
+            van={activeVan}
+            onVanChange={setActiveVanId}
+            onOpenManage={() => setView('manage')}
+            onToast={showToast}
+          />
+        )}
+        {view === 'shop' && <ShopPickListView onToast={showToast} />}
+        {view === 'manage' && (
+          <TemplateManager
+            vans={vans}
+            van={activeVan}
+            onVanChange={setActiveVanId}
+            onToast={showToast}
+            teamSyncActive={teamSync.session !== null}
+          />
+        )}
+        {view === 'team' && (
+          <TeamSyncView controller={teamSync} onToast={showToast} />
+        )}
+      </main>
+
+      <Toast toast={toast} />
+    </div>
+  )
+}
+
+export default App

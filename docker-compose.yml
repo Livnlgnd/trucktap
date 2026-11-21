@@ -1,0 +1,16 @@
+services:
+  trucktap:
+    build: .
+    container_name: trucktap
+    restart: unless-stopped
+    ports:
+      - '8787:8787'
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env or the shell}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8787}
+      NODE_ENV: production
+    volumes:
+      - trucktap-data:/data
+
+volumes:
+  trucktap-data:
