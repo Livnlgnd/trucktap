@@ -17,6 +17,7 @@ import { ShopPickListView } from './components/ShopPickListView'
 import { TemplateManager } from './components/TemplateManager'
 import { TeamSyncView } from './components/TeamSyncView'
 import { LicenseGate, LicenseView } from './components/LicenseView'
+import { FirstRunView } from './components/FirstRunView'
 import { Toast, type ToastData, type ToastTone } from './components/Toast'
 
 const VIEW_KEY = 'trucktap.view'
@@ -151,7 +152,7 @@ function App() {
     )
   }
 
-  if (!ready || !vans || !activeVan || license.loading || !license.state) {
+  if (!ready || !vans || license.loading || !license.state) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-page px-6 text-center text-ink">
         <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-accent text-accent-ink shadow-2xl">
@@ -178,6 +179,20 @@ function App() {
       </>
     )
   }
+
+  if (vans.length === 0) {
+    return (
+      <>
+        <FirstRunView
+          onCreated={(van) => setActiveVanId(van.id)}
+          onToast={showToast}
+        />
+        <Toast toast={toast} />
+      </>
+    )
+  }
+
+  if (!activeVan) return null
 
   return (
     <div className="min-h-screen bg-page text-ink">
@@ -251,7 +266,12 @@ function App() {
             onToast={showToast}
           />
         )}
-        {view === 'shop' && <ShopPickListView onToast={showToast} />}
+        {view === 'shop' && (
+          <ShopPickListView
+            onToast={showToast}
+            onOpenTech={() => setView('tech')}
+          />
+        )}
         {view === 'manage' && (
           <TemplateManager
             vans={vans}

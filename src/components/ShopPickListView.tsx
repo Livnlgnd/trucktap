@@ -256,8 +256,10 @@ function OrderCard({
 
 export function ShopPickListView({
   onToast,
+  onOpenTech,
 }: {
   onToast: (message: string, tone?: ToastTone) => void
+  onOpenTech?: () => void
 }) {
   const orders =
     useLiveQuery(
@@ -467,6 +469,15 @@ export function ShopPickListView({
                 New tech lists will appear here automatically, even if they were
                 submitted offline.
               </p>
+              {onOpenTech && (
+                <button
+                  type="button"
+                  onClick={onOpenTech}
+                  className="mt-5 min-h-14 rounded-xl border-2 border-line bg-page px-6 text-sm font-black text-ink transition hover:bg-panel-2"
+                >
+                  Open the Tech clicker
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid gap-4 lg:grid-cols-2">

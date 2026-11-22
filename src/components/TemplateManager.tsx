@@ -8,6 +8,7 @@ import {
   RotateCcw,
   Search,
   Trash2,
+  Truck,
   X,
 } from 'lucide-react'
 import type { PartItem, Van } from '../types'
@@ -15,7 +16,7 @@ import {
   db,
   deletePart,
   loadTemplate,
-  resetDemoData,
+  resetAllData,
   resetVanUsage,
 } from '../db'
 import {
@@ -25,8 +26,10 @@ import {
 } from '../lib/templates'
 import { cn, partIdentity, pluralize } from '../lib/utils'
 import { ConfirmDialog } from './ConfirmDialog'
+import { Modal } from './Modal'
 import { PartIcon } from './PartIcon'
 import { PartEditorModal } from './PartEditorModal'
+import { VanSetupForm } from './VanSetupForm'
 import type { ToastTone } from './Toast'
 
 const PRESET_TONES: Record<string, string> = {
@@ -63,6 +66,7 @@ export function TemplateManager({
   const [loadingPreset, setLoadingPreset] = useState<string | null>(null)
   const [resetOpen, setResetOpen] = useState(false)
   const [resetting, setResetting] = useState(false)
+  const [addVanOpen, setAddVanOpen] = useState(false)
   const [usageResetOpen, setUsageResetOpen] = useState(false)
   const [resettingUsage, setResettingUsage] = useState(false)
 
@@ -185,14 +189,14 @@ export function TemplateManager({
     }
   }
 
-  const confirmDemoReset = async () => {
+  const confirmReset = async () => {
     setResetting(true)
     try {
-      await resetDemoData()
-      onToast('Demo vans, templates, and orders restored.', 'success')
+      await resetAllData()
+      onToast('Local data cleared. Add a van to start again.', 'success')
       setResetOpen(false)
     } catch {
-      onToast('Could not reset the demo data.', 'error')
+      onToast('Could not clear the local data.', 'error')
     } finally {
       setResetting(false)
     }
@@ -213,14 +217,24 @@ export function TemplateManager({
             presets.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openAdd}
-          className="flex min-h-16 items-center justify-center gap-2 rounded-2xl bg-accent px-5 text-sm font-black uppercase tracking-wide text-accent-ink shadow-lg transition active:scale-[0.99]"
-        >
-          <Plus size={20} strokeWidth={3} />
-          Add Part
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setAddVanOpen(true)}
+            className="flex min-h-16 items-center justify-center gap-2 rounded-2xl border border-line bg-panel px-4 text-xs font-black uppercase tracking-wide text-ink transition hover:bg-panel-2 active:scale-[0.99]"
+          >
+            <Truck size={18} />
+            Add Van
+          </button>
+          <button
+            type="button"
+            onClick={openAdd}
+            className="flex min-h-16 items-center justify-center gap-2 rounded-2xl bg-accent px-5 text-sm font-black uppercase tracking-wide text-accent-ink shadow-lg transition active:scale-[0.99]"
+          >
+            <Plus size={20} strokeWidth={3} />
+            Add Part
+          </button>
+        </div>
       </div>
 
       <section className="rounded-2xl border border-line bg-panel p-3 shadow-sm sm:p-4">
@@ -514,11 +528,11 @@ export function TemplateManager({
       <section className="mt-8 rounded-2xl border border-line bg-panel p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-sm font-black">Demo controls</h2>
+            <h2 className="text-sm font-black">Device data</h2>
             <p className="mt-0.5 text-xs text-muted">
               {teamSyncActive
-                ? 'Team Sync is active. Disconnect in Team Sync before resetting local demo data.'
-                : 'Restore the three demo vans, all 24 template lines, and sample shop orders.'}
+                ? 'Team Sync is active. Disconnect in Team Sync before clearing local data.'
+                : 'Clear every van, part, and order on this device and return to setup.'}
             </p>
           </div>
           <button
@@ -528,7 +542,7 @@ export function TemplateManager({
             className="flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 border-line bg-page px-4 text-xs font-bold text-muted transition hover:border-red-500/40 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-45 dark:hover:text-red-400"
           >
             <RotateCcw size={16} />
-            Reset Demo Data
+            Reset local data
           </button>
         </div>
       </section>
@@ -582,15 +596,31 @@ export function TemplateManager({
 
       <ConfirmDialog
         open={resetOpen}
-        title="Reset demo data?"
-        description="This deletes all local vans, templates, orders, and queued sync changes on this device, then restores the original demo setup."
-        confirmLabel="Reset Everything"
+        title="Clear all local data?"
+        description="This deletes every van, part, order, and queued sync change on this device, then returns to the setup screen. This cannot be undone."
+        confirmLabel="Clear everything"
         busy={resetting}
         onCancel={() => {
           if (!resetting) setResetOpen(false)
         }}
-        onConfirm={() => void confirmDemoReset()}
+        onConfirm={() => void confirmReset()}
       />
+
+      <Modal
+        open={addVanOpen}
+        onClose={() => setAddVanOpen(false)}
+        title="Add a van"
+        description="Create another truck board. Pick a starting parts list or start empty."
+      >
+        <VanSetupForm
+          submitLabel="Add van"
+          onCreated={(created) => {
+            setAddVanOpen(false)
+            onVanChange(created.id)
+            onToast(`${created.name} added.`, 'success')
+          }}
+        />
+      </Modal>
     </div>
   )
 }

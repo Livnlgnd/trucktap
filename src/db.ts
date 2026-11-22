@@ -3,13 +3,11 @@ import type {
   OrderStatus,
   PartItem,
   RestockOrder,
-  RestockOrderItem,
   SyncAction,
   SyncQueueEntry,
   TemplatePart,
   Van,
 } from './types'
-import { DEFAULT_TEMPLATE } from './lib/templates'
 import {
   createId,
   localDateKey,
@@ -37,120 +35,102 @@ class TruckTapDatabase extends Dexie {
 
 export const db = new TruckTapDatabase()
 
-const VAN_SEEDS: Van[] = [
-  { id: 'van-101', name: 'Van #101 - Mike', techName: 'Mike', number: '#101' },
-  {
-    id: 'van-102',
-    name: 'Van #102 - Carlos',
-    techName: 'Carlos',
-    number: '#102',
-  },
-  {
-    id: 'van-104',
-    name: 'Van #104 - Sarah',
-    techName: 'Sarah',
-    number: '#104',
-  },
-]
-
-function buildPartsForVan(vanId: string): PartItem[] {
-  return DEFAULT_TEMPLATE.map((part, index) => ({
-    id: `part-${vanId}-${String(index + 1).padStart(2, '0')}`,
-    vanId,
-    name: part.name,
-    sku: part.sku,
-    category: part.category,
-    parLevel: part.parLevel,
-    currentUsedToday: 0,
-    iconName: part.iconName,
-  }))
+const DEMO_ORDER_IDS = ['TT-101-DEMO', 'TT-102-DEMO', 'TT-104-DEMO']
+const DEMO_VAN_NAMES: Record<string, string> = {
+  'van-101': 'Van #101 - Mike',
+  'van-102': 'Van #102 - Carlos',
+  'van-104': 'Van #104 - Sarah',
 }
+const DEMO_CLEANUP_KEY = 'trucktap.demo-cleanup-v1'
 
-function seedOrderItems(
-  parts: PartItem[],
-  vanId: string,
-  selections: Array<[name: string, qty: number, picked?: boolean]>,
-): RestockOrderItem[] {
-  return selections.map(([name, qty, picked = false]) => {
-    const part = parts.find(
-      (candidate) => candidate.vanId === vanId && candidate.name === name,
+// Older builds shipped demo vans and sample orders. Remove them once on
+// upgrade, but only when the database still looks untouched demo data.
+async function removeLegacyDemoData(): Promise<void> {
+  try {
+    if (window.localStorage.getItem(DEMO_CLEANUP_KEY)) return
+  } catch {
+    return
+  }
+
+  try {
+    const vans = await db.vans.toArray()
+    const demoVans = vans.filter(
+      (van) => DEMO_VAN_NAMES[van.id] === van.name,
     )
 
-    if (!part) {
-      throw new Error(`Seed part not found: ${name}`)
+    if (demoVans.length === Object.keys(DEMO_VAN_NAMES).length) {
+      const orders = await db.orders.toArray()
+      const hasRealOrders = orders.some(
+        (order) => !DEMO_ORDER_IDS.includes(order.id),
+      )
+
+      if (!hasRealOrders) {
+        const demoIds = demoVans.map((van) => van.id)
+        await db.transaction(
+          'rw',
+          db.vans,
+          db.parts,
+          db.orders,
+          db.syncQueue,
+          async () => {
+            await db.parts.where('vanId').anyOf(demoIds).delete()
+            await db.vans.bulkDelete(demoIds)
+            await db.orders.bulkDelete(DEMO_ORDER_IDS)
+          },
+        )
+      }
     }
 
-    return {
-      partId: part.id,
-      partName: part.name,
-      sku: part.sku ?? '',
-      qty,
-      picked,
-    }
-  })
+    window.localStorage.setItem(DEMO_CLEANUP_KEY, '1')
+  } catch {
+    // Leave existing data untouched if cleanup cannot run.
+  }
 }
 
-async function seedIfEmpty(): Promise<void> {
-  await db.transaction('rw', db.vans, db.parts, db.orders, async () => {
-    if ((await db.vans.count()) > 0) return
+export async function createVan(input: {
+  name: string
+  techName?: string
+  number?: string
+  templateParts?: TemplatePart[]
+  presetId?: string
+}): Promise<Van> {
+  const name = input.name.trim()
+  if (!name) throw new Error('Enter a van name.')
 
-    await db.vans.bulkAdd(VAN_SEEDS)
+  const van: Van = {
+    id: createId('van'),
+    name,
+    techName: input.techName?.trim() ?? '',
+    number: input.number?.trim() ?? '',
+  }
 
-    const parts = VAN_SEEDS.flatMap((van) => buildPartsForVan(van.id))
-    await db.parts.bulkAdd(parts)
+  return db.transaction('rw', db.vans, db.parts, db.syncQueue, async () => {
+    await db.vans.add(van)
 
-    const now = Date.now()
-    const minutesAgo = (minutes: number) =>
-      new Date(now - minutes * 60_000).toISOString()
+    const templateParts = input.templateParts ?? []
+    if (templateParts.length > 0) {
+      const parts: PartItem[] = templateParts.map((part) => ({
+        id: createId('part'),
+        vanId: van.id,
+        name: part.name,
+        sku: part.sku,
+        category: part.category,
+        parLevel: part.parLevel,
+        currentUsedToday: 0,
+        iconName: part.iconName,
+      }))
 
-    const orders: RestockOrder[] = [
-      {
-        id: 'TT-101-DEMO',
-        vanId: 'van-101',
-        vanName: 'Van #101 - Mike',
-        submittedAt: minutesAgo(118),
-        jobTag: 'WO-2231 · Unit 12 kitchen',
-        status: 'restocked',
-        restockedAt: minutesAgo(74),
-        items: seedOrderItems(parts, 'van-101', [
-          ['20A Single-Pole Breaker', 2, true],
-          ['12/2 Romex Cable (25 ft)', 1, true],
-          ['Yellow Wire Nuts (Bag/10)', 2, true],
-          ['Heavy-Duty Duct Tape', 1, true],
-        ]),
-      },
-      {
-        id: 'TT-102-DEMO',
-        vanId: 'van-102',
-        vanName: 'Van #102 - Carlos',
-        submittedAt: minutesAgo(46),
-        jobTag: 'WO-2481 · Unit 4B panel swap',
-        status: 'pending',
-        items: seedOrderItems(parts, 'van-102', [
-          ['GFCI Outlet 20A White', 4],
-          ['20A Single-Pole Breaker', 2],
-          ['Red Wire Nuts (Bag/10)', 3, true],
-          ['1/2" EMT Compression Connector', 6],
-          ['Electrical Tape (Black)', 2],
-        ]),
-      },
-      {
-        id: 'TT-104-DEMO',
-        vanId: 'van-104',
-        vanName: 'Van #104 - Sarah',
-        submittedAt: minutesAgo(21),
-        jobTag: 'WO-2493 · Building C leak call',
-        status: 'pending',
-        items: seedOrderItems(parts, 'van-104', [
-          ['1/2" SharkBite Coupling', 4],
-          ['1-1/2" P-Trap Kit', 2],
-          ['Teflon Tape (3-pack)', 3, true],
-          ['Wax Ring (No-Seal)', 2],
-        ]),
-      },
-    ]
+      await db.parts.bulkAdd(parts)
+      await queueSync('template:load', 'template', input.presetId ?? 'initial', {
+        vanId: van.id,
+        presetId: input.presetId ?? 'initial',
+        parts,
+        addedPartIds: parts.map((part) => part.id),
+        addedCount: parts.length,
+      })
+    }
 
-    await db.orders.bulkAdd(orders)
+    return van
   })
 }
 
@@ -158,7 +138,7 @@ let initialization: Promise<void> | null = null
 
 async function initialize(): Promise<void> {
   await db.open()
-  await seedIfEmpty()
+  await removeLegacyDemoData()
 
   try {
     const today = localDateKey()
@@ -436,7 +416,7 @@ export async function loadTemplate(
   })
 }
 
-export async function resetDemoData(): Promise<void> {
+export async function resetAllData(): Promise<void> {
   await db.transaction(
     'rw',
     db.vans,
@@ -453,10 +433,9 @@ export async function resetDemoData(): Promise<void> {
     },
   )
 
-  await seedIfEmpty()
-
   try {
     window.localStorage.setItem(USAGE_DATE_KEY, localDateKey())
+    window.localStorage.removeItem('trucktap.active-van')
   } catch {
     // Optional nicety; ignore storage errors.
   }

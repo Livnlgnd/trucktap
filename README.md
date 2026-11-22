@@ -48,7 +48,7 @@ npm run desktop:dist     # Windows installer in release/
 The prebuilt installer is:
 
 ```text
-release/TruckTap-Setup-1.1.2.exe
+release/TruckTap-Setup-1.1.3.exe
 ```
 
 Desktop details:
@@ -135,15 +135,17 @@ offline app launches.
   confirmation drawer, and daily tap reset.
 - **Shop Pick-List View** — live metrics, per-van pick lists, item check-off,
   mark-restocked flow, consolidated supplier table, and CSV export.
-- **Manage Van Templates** — add/edit/delete parts, set par levels, clear tap
-  counts, and load Electrical, Plumbing, or Multifamily starter templates.
+- **Manage Van Templates** - add a van, add/edit/delete parts, set par levels,
+  clear tap counts, load Electrical, Plumbing, or Multifamily starter templates,
+  and reset local device data.
 - **Team Sync** — create or join a shared workspace, invite via join code,
   manage members, monitor queue/sync state, and push data across devices.
 - **Offline UX** — every local write commits to IndexedDB plus the sync queue in
   one transaction. Taps keep counting in dead zones; queued operations sync when
   the server is reachable. Remote updates wait while local operations are queued.
-- **Seeded demo data** — three vans, 24 default electrical/general parts per
-  van, pending orders, and a completed restock.
+- **Clean first run** - new installs start with a guided setup that creates the
+  first van and optionally loads an Electrical, Plumbing, or Multifamily parts
+  template. No sample vans or orders ship in the app.
 - **Commercial packaging** — see [docs/PRICING.md](docs/PRICING.md) for one-time
   Starter/Standard/Advanced licenses and the optional Team Sync add-on.
 

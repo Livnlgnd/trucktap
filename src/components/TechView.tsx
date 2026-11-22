@@ -27,6 +27,7 @@ function sortParts(parts: PartItem[]): PartItem[] {
 }
 
 const EMPTY_PARTS: PartItem[] = []
+const HOWTO_DISMISSED_KEY = 'trucktap.howto-dismissed'
 
 export function TechView({
   vans,
@@ -50,6 +51,22 @@ export function TechView({
   const [activeCategory, setActiveCategory] = useState('All')
   const [jobTag, setJobTag] = useState('')
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [showHowTo, setShowHowTo] = useState(() => {
+    try {
+      return !window.localStorage.getItem(HOWTO_DISMISSED_KEY)
+    } catch {
+      return true
+    }
+  })
+
+  const dismissHowTo = () => {
+    setShowHowTo(false)
+    try {
+      window.localStorage.setItem(HOWTO_DISMISSED_KEY, '1')
+    } catch {
+      // Dismissal is non-critical.
+    }
+  }
 
   const sortedParts = useMemo(() => sortParts(parts), [parts])
   const usedParts = useMemo(
@@ -127,6 +144,44 @@ export function TechView({
           {pluralize(parts.length, 'part')} on board
         </div>
       </div>
+
+      {showHowTo && (
+        <section className="mb-3 rounded-2xl border border-accent/25 bg-accent/[0.06] p-3 sm:p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-ink">
+              <Truck size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-black">New here? It takes three steps.</p>
+              <div className="mt-2 grid gap-1.5 sm:grid-cols-3">
+                {[
+                  'Tap +1 for each part you use.',
+                  'Add a job or unit number if you want.',
+                  'Send the restock list to the shop.',
+                ].map((step, index) => (
+                  <p
+                    key={step}
+                    className="flex items-start gap-2 text-[11px] font-semibold leading-snug text-muted"
+                  >
+                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent/15 text-[9px] font-black text-accent">
+                      {index + 1}
+                    </span>
+                    {step}
+                  </p>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={dismissHowTo}
+              aria-label="Dismiss quick start"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted transition hover:bg-panel-2 hover:text-ink"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-line bg-panel p-3 shadow-sm sm:p-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
