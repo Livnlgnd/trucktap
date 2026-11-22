@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none';"
+    />
+    <title>TruckTap License Console</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="login-view" class="login-shell">
+      <div class="login-card">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M3 16V7a1 1 0 0 1 1-1h9v10M13 9h4l4 4v3h-2"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <circle cx="7.5" cy="17" r="2" stroke="currentColor" stroke-width="1.8" />
+            <circle cx="17.5" cy="17" r="2" stroke="currentColor" stroke-width="1.8" />
+          </svg>
+        </div>
+        <p class="eyebrow">Vybelive operations</p>
+        <h1>TruckTap License Console</h1>
+        <p class="login-copy">
+          Review Stripe purchases, inspect issued keys, and create manual
+          licenses for support, resellers, and replacements.
+        </p>
+
+        <form id="login-form" class="login-form">
+          <label for="admin-token">Admin API token</label>
+          <div class="input-wrap">
+            <input
+              id="admin-token"
+              type="password"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="Paste the LICENSE_ADMIN_TOKEN"
+            />
+            <button
+              id="toggle-token"
+              class="icon-button"
+              type="button"
+              title="Show token"
+            >
+              Show
+            </button>
+          </div>
+          <label class="check-row">
+            <input id="remember-token" type="checkbox" checked />
+            <span>Remember this token on this device using OS encryption</span>
+          </label>
+          <p id="login-error" class="form-error" hidden></p>
+          <button id="connect-button" class="button primary full" type="submit">
+            Connect to license service
+          </button>
+        </form>
+
+        <p class="login-footnote">
+          Calls the TruckTap license Worker directly. The token stays in this
+          app and is encrypted with Windows DPAPI.
+        </p>
+      </div>
+    </div>
+
+    <div id="app-view" class="app-shell" hidden>
+      <header class="topbar">
+        <div class="topbar-brand">
+          <div class="brand-mark small">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M3 16V7a1 1 0 0 1 1-1h9v10M13 9h4l4 4v3h-2"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <circle cx="7.5" cy="17" r="2" stroke="currentColor" stroke-width="1.8" />
+              <circle cx="17.5" cy="17" r="2" stroke="currentColor" stroke-width="1.8" />
+            </svg>
+          </div>
+          <div>
+            <p class="topbar-title">TruckTap License Console</p>
+            <p class="topbar-subtitle">Purchases, keys, and manual issuance</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span id="sync-status" class="sync-status">
+            <span class="status-dot"></span>
+            <span id="sync-label">Connecting</span>
+          </span>
+          <button id="refresh-top" class="button ghost" type="button">
+            Refresh
+          </button>
+          <button id="lock-button" class="button ghost" type="button">
+            Lock
+          </button>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="hero-row">
+          <div>
+            <p class="eyebrow">License operations</p>
+            <h1>Every TruckTap license in one place</h1>
+            <p class="hero-copy">
+              Stripe checkouts are recorded automatically. Manual licenses are
+              signed with the same private key and work offline in the app.
+            </p>
+          </div>
+          <div class="hero-actions">
+            <button id="issue-button" class="button primary" type="button">
+              Issue license
+            </button>
+            <button id="export-button" class="button outline" type="button">
+              Export CSV
+            </button>
+          </div>
+        </section>
+
+        <section class="stats-grid" aria-label="License summary">
+          <article class="stat-card">
+            <span class="stat-label">Licenses</span>
+            <strong id="stat-total">0</strong>
+            <span class="stat-detail">All issued keys</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Companies</span>
+            <strong id="stat-companies">0</strong>
+            <span class="stat-detail">Distinct organizations</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Paid via Stripe</span>
+            <strong id="stat-stripe">0</strong>
+            <span class="stat-detail">Completed checkouts</span>
+          </article>
+          <article class="stat-card accent">
+            <span class="stat-label">Manual</span>
+            <strong id="stat-manual">0</strong>
+            <span class="stat-detail">Issued by support</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Mix</span>
+            <strong id="stat-mix" class="stat-mix">-</strong>
+            <span class="stat-detail">Starter / Standard / Advanced</span>
+          </article>
+        </section>
+
+        <section class="toolbar" aria-label="Filter licenses">
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2" />
+              <path
+                d="m16 16 4 4"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <input
+              id="search-input"
+              type="search"
+              placeholder="Search company, email, session, or key"
+              autocomplete="off"
+            />
+          </div>
+          <select id="plan-filter" class="select" aria-label="Filter by plan">
+            <option value="all">All plans</option>
+            <option value="starter">Starter</option>
+            <option value="standard">Standard</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <select id="source-filter" class="select" aria-label="Filter by source">
+            <option value="all">All sources</option>
+            <option value="stripe">Stripe purchases</option>
+            <option value="manual">Manual</option>
+          </select>
+          <button id="refresh-button" class="button outline" type="button">
+            Refresh
+          </button>
+        </section>
+
+        <div id="loading-state" class="state-card" hidden>
+          <div class="spinner"></div>
+          <p>Loading licenses from the license service.</p>
+        </div>
+
+        <div id="error-state" class="state-card error" hidden>
+          <p id="error-message"></p>
+          <button id="retry-button" class="button outline" type="button">
+            Retry
+          </button>
+        </div>
+
+        <div id="empty-state" class="state-card" hidden>
+          <h2>No licenses found</h2>
+          <p>
+            After a Stripe checkout, the license appears here automatically.
+            You can also issue one manually.
+          </p>
+          <button id="empty-issue-button" class="button primary" type="button">
+            Issue license
+          </button>
+        </div>
+
+        <section id="table-wrap" class="table-wrap" hidden>
+          <table class="license-table">
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Plan</th>
+                <th>Email</th>
+                <th>Source</th>
+                <th>Issued</th>
+                <th>Updates until</th>
+                <th>Key</th>
+                <th class="actions-col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="license-body"></tbody>
+          </table>
+          <p id="result-count" class="result-count"></p>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="issue-dialog" class="dialog">
+      <form id="issue-form" class="dialog-card" method="dialog">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow">Manual issuance</p>
+            <h2>Create a signed license</h2>
+          </div>
+          <button
+            class="icon-button"
+            type="button"
+            data-close="issue-dialog"
+            aria-label="Close"
+          >
+            Close
+          </button>
+        </div>
+        <p class="dialog-copy">
+          The key is signed by the license Worker and works offline immediately.
+          Use this for replacements, resellers, or support credits.
+        </p>
+
+        <label for="issue-plan">Plan</label>
+        <select id="issue-plan" class="select full">
+          <option value="starter">Starter - 3 vans, 1 shop station, 12 months</option>
+          <option value="standard" selected>Standard - 10 vans, 3 shop stations, 12 months</option>
+          <option value="advanced">Advanced - unlimited vans, site license, 24 months</option>
+        </select>
+
+        <label for="issue-company">Company</label>
+        <input
+          id="issue-company"
+          class="input"
+          autocomplete="organization"
+          placeholder="Northside Electric"
+          maxlength="120"
+        />
+
+        <label for="issue-email">Email <span class="optional">(optional)</span></label>
+        <input
+          id="issue-email"
+          class="input"
+          type="email"
+          autocomplete="email"
+          placeholder="ops@northside.example"
+          maxlength="200"
+        />
+
+        <p id="issue-error" class="form-error" hidden></p>
+
+        <div class="dialog-actions">
+          <button class="button ghost" type="button" data-close="issue-dialog">
+            Cancel
+          </button>
+          <button id="issue-submit" class="button primary" type="submit">
+            Sign and issue
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="detail-dialog" class="dialog wide">
+      <div class="dialog-card">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow">License detail</p>
+            <h2 id="detail-company">License</h2>
+          </div>
+          <button
+            class="icon-button"
+            type="button"
+            data-close="detail-dialog"
+            aria-label="Close"
+          >
+            Close
+          </button>
+        </div>
+        <div id="detail-body"></div>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

@@ -48,7 +48,7 @@ npm run desktop:dist     # Windows installer in release/
 The prebuilt installer is:
 
 ```text
-release/TruckTap-Setup-1.1.1.exe
+release/TruckTap-Setup-1.1.2.exe
 ```
 
 Desktop details:
@@ -63,6 +63,18 @@ Desktop details:
 - Team Sync connects to the backend at `http://127.0.0.1:8787` by default.
   The server address can be changed in **Team Sync → Server settings** while
   signed out, or set at build time with `VITE_API_URL`.
+
+## License console (admin)
+
+The Windows desktop app includes the internal License Console behind the admin
+token. It is not shown in the customer-facing navigation.
+
+- Open **Help → License Console…** or press **Ctrl+Shift+A**.
+- Launch the console directly with `TruckTap.exe --admin`.
+- Log in with the Worker secret `TRUCKTAP_ADMIN_TOKEN`. The token is encrypted
+  with Windows DPAPI after the first successful login.
+- The console lists Stripe and manually issued licenses, decodes plan limits,
+  issues signed manual keys, and exports CSV.
 
 ## Team Sync backend
 

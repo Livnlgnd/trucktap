@@ -1,10 +1,13 @@
 import {
   app,
   BrowserWindow,
+  clipboard,
   dialog,
+  ipcMain,
   Menu,
   net,
   protocol,
+  safeStorage,
   screen,
   session,
   shell,
@@ -19,6 +22,11 @@ const DIST_DIR = path.join(ROOT_DIR, 'dist')
 const APP_SCHEME = 'trucktap'
 const APP_HOST = 'app'
 const APP_URL = `${APP_SCHEME}://${APP_HOST}/app.html`
+const ADMIN_URL = `${APP_SCHEME}://${APP_HOST}/admin/index.html`
+const CONSOLE_API_BASE =
+  process.env.TRUCKTAP_LICENSE_API ||
+  'https://keytrack-license.joshua-c77.workers.dev'
+const CONSOLE_ALLOWED_PATHS = [/^\/api\/trucktap\/admin\/licenses$/]
 const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 const IS_DEV = Boolean(DEV_SERVER_URL)
 
@@ -37,6 +45,7 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 let mainWindow = null
+let adminWindow = null
 let saveStateTimer = null
 
 function getWindowStatePath() {
@@ -139,6 +148,163 @@ function showAboutDialog() {
   }
 }
 
+function consoleTokenFile() {
+  return path.join(app.getPath('userData'), 'license-console-token.bin')
+}
+
+function isConsolePathAllowed(apiPath) {
+  if (typeof apiPath !== 'string') return false
+  try {
+    const pathname = new URL(apiPath, 'https://license-console.local').pathname
+    return CONSOLE_ALLOWED_PATHS.some((pattern) => pattern.test(pathname))
+  } catch {
+    return false
+  }
+}
+
+async function consoleApiRequest({ method = 'GET', path: apiPath, body, token }) {
+  if (!isConsolePathAllowed(apiPath)) {
+    return { ok: false, status: 0, error: 'That license API route is not allowed.' }
+  }
+  if (!token) {
+    return { ok: false, status: 0, error: 'Admin token is required.' }
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 20000)
+
+  try {
+    const response = await fetch(`${CONSOLE_API_BASE}${apiPath}`, {
+      method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Admin-Token': token,
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+    })
+    const data = await response.json().catch(() => null)
+    return { ok: response.ok, status: response.status, data }
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      error:
+        error?.name === 'AbortError'
+          ? 'The license service timed out.'
+          : 'Could not reach the license service.',
+    }
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+function registerConsoleIpc() {
+  ipcMain.handle('console:api', (_event, payload) =>
+    consoleApiRequest(payload ?? {}),
+  )
+
+  ipcMain.handle('console:clipboard-write', (_event, text) => {
+    clipboard.writeText(String(text ?? ''))
+    return true
+  })
+
+  ipcMain.handle('console:token-load', () => {
+    try {
+      if (!safeStorage.isEncryptionAvailable() || !fs.existsSync(consoleTokenFile())) {
+        return ''
+      }
+      return safeStorage.decryptString(fs.readFileSync(consoleTokenFile()))
+    } catch {
+      return ''
+    }
+  })
+
+  ipcMain.handle('console:token-save', (_event, token) => {
+    try {
+      if (
+        typeof token !== 'string' ||
+        !token ||
+        !safeStorage.isEncryptionAvailable()
+      ) {
+        return false
+      }
+      fs.writeFileSync(consoleTokenFile(), safeStorage.encryptString(token))
+      return true
+    } catch {
+      return false
+    }
+  })
+
+  ipcMain.handle('console:token-clear', () => {
+    try {
+      if (fs.existsSync(consoleTokenFile())) fs.unlinkSync(consoleTokenFile())
+      return true
+    } catch {
+      return false
+    }
+  })
+
+  ipcMain.handle('console:export-csv', async (_event, payload) => {
+    const content = String(payload?.content ?? '')
+    const defaultName = String(payload?.filename ?? 'trucktap-licenses.csv')
+    const result = await dialog.showSaveDialog(adminWindow ?? mainWindow, {
+      title: 'Export TruckTap licenses',
+      defaultPath: defaultName,
+      filters: [{ name: 'CSV', extensions: ['csv'] }],
+    })
+    if (result.canceled || !result.filePath) return { saved: false }
+    fs.writeFileSync(result.filePath, content, 'utf8')
+    return { saved: true, filePath: result.filePath }
+  })
+}
+
+function openAdminConsole() {
+  if (adminWindow && !adminWindow.isDestroyed()) {
+    adminWindow.show()
+    adminWindow.focus()
+    return
+  }
+
+  const iconPath = path.join(DIST_DIR, 'icons', 'icon-512.png')
+
+  adminWindow = new BrowserWindow({
+    width: 1400,
+    height: 920,
+    minWidth: 1040,
+    minHeight: 700,
+    backgroundColor: '#0c1118',
+    title: 'TruckTap License Console',
+    autoHideMenuBar: true,
+    ...(mainWindow ? { parent: mainWindow } : {}),
+    ...(fs.existsSync(iconPath) ? { icon: iconPath } : {}),
+    webPreferences: {
+      preload: path.join(__dirname, 'console-preload.cjs'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      webSecurity: true,
+      spellcheck: false,
+    },
+  })
+
+  adminWindow.loadURL(ADMIN_URL)
+
+  adminWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) void shell.openExternal(url)
+    return { action: 'deny' }
+  })
+
+  adminWindow.webContents.on('will-navigate', (event) => {
+    event.preventDefault()
+  })
+
+  adminWindow.on('closed', () => {
+    adminWindow = null
+  })
+}
+
 function buildApplicationMenu() {
   const isMac = process.platform === 'darwin'
   const template = [
@@ -199,6 +365,12 @@ function buildApplicationMenu() {
       label: 'Help',
       submenu: [
         {
+          label: 'License Console…',
+          accelerator: 'CmdOrCtrl+Shift+A',
+          click: () => openAdminConsole(),
+        },
+        { type: 'separator' },
+        {
           label: 'Open Data Folder',
           click: () => {
             void shell.openPath(app.getPath('userData'))
@@ -227,17 +399,26 @@ async function registerAppProtocol() {
       let pathname = decodeURIComponent(url.pathname)
       if (!pathname || pathname === '/') pathname = '/index.html'
 
-      let filePath = path.normalize(path.join(DIST_DIR, pathname))
-      const relative = path.relative(DIST_DIR, filePath)
+      // The admin console ships only inside the desktop bundle, never in the
+      // web build. Keep it in electron/admin and serve it from there.
+      let baseDir = DIST_DIR
+      let relativePath = pathname
+      if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+        baseDir = path.join(__dirname, 'admin')
+        relativePath = pathname.slice('/admin'.length) || '/index.html'
+      }
+
+      let filePath = path.normalize(path.join(baseDir, relativePath))
+      const relative = path.relative(baseDir, filePath)
       if (relative.startsWith('..') || path.isAbsolute(relative)) {
         return new Response('Not found', { status: 404 })
       }
 
       if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-        if (path.extname(pathname)) {
+        if (path.extname(relativePath)) {
           return new Response('Not found', { status: 404 })
         }
-        filePath = path.join(DIST_DIR, 'index.html')
+        filePath = path.join(baseDir, 'index.html')
       }
 
       return await net.fetch(pathToFileURL(filePath).toString())
@@ -357,8 +538,14 @@ if (!hasSingleInstanceLock) {
       (_webContents, _permission, callback) => callback(false),
     )
 
+    registerConsoleIpc()
     buildApplicationMenu()
-    createWindow()
+
+    if (process.argv.includes('--admin')) {
+      openAdminConsole()
+    } else {
+      createWindow()
+    }
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
