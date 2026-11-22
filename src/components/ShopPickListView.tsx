@@ -543,7 +543,7 @@ export function ShopPickListView({
               <p className="mt-0.5 text-xs text-muted">
                 {supplierRows.length === 0
                   ? 'No unpicked parts across active vans.'
-                  : `${pluralize(supplierRows.length, 'unique line')} · ${supplierUnits} units across ${new Set(activeOrders.map((order) => order.vanId)).size} vans`}
+                  : `${pluralize(supplierRows.length, 'unique line')} · ${supplierUnits} units across ${pluralize(new Set(activeOrders.map((order) => order.vanId)).size, 'van')}`}
               </p>
             </div>
             <button

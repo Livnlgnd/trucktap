@@ -354,7 +354,7 @@ export function TeamSyncView({
                     onChange={(event) => setName(event.target.value)}
                     required
                     autoComplete="name"
-                    placeholder="Mike Alvarez"
+                    placeholder="Your name"
                     className="min-h-14 w-full rounded-xl border-2 border-line bg-page px-3 text-sm font-semibold text-ink outline-none focus:border-accent focus:ring-4 focus:ring-accent/15"
                   />
                 </label>
@@ -375,7 +375,7 @@ export function TeamSyncView({
                       onChange={(event) => setWorkspaceName(event.target.value)}
                       required
                       autoComplete="organization"
-                      placeholder="Northside Electric"
+                      placeholder="Your shop name"
                       className="min-h-14 w-full rounded-xl border-2 border-line bg-page pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-accent focus:ring-4 focus:ring-accent/15"
                     />
                   </div>
@@ -433,7 +433,7 @@ export function TeamSyncView({
                     onChange={(event) => setEmail(event.target.value)}
                     required
                     autoComplete="email"
-                    placeholder="mike@northsideelectric.com"
+                    placeholder="you@company.com"
                     className="min-h-14 w-full rounded-xl border-2 border-line bg-page pl-10 pr-3 text-sm font-semibold text-ink outline-none focus:border-accent focus:ring-4 focus:ring-accent/15"
                   />
                 </div>

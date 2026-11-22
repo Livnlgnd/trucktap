@@ -218,7 +218,7 @@ function RetrieveLicenseForm({
           value={company}
           onChange={(event) => setCompany(event.target.value)}
           autoComplete="organization"
-          placeholder="Northside Electric"
+          placeholder="Your company name"
           className="min-h-12 w-full rounded-xl border-2 border-line bg-page px-3 text-sm text-ink outline-none transition placeholder:text-muted/50 focus:border-accent focus:ring-4 focus:ring-accent/15"
         />
       </label>
@@ -413,7 +413,7 @@ function LicenseStatusCard({
             <h2 className="mt-1 text-2xl font-black tracking-tight">
               {state.trialExpired
                 ? 'Activate TruckTap to keep working'
-                : `${state.trialDaysLeft} ${pluralize(state.trialDaysLeft, 'day')} left`}
+                : `${pluralize(state.trialDaysLeft, 'day')} left`}
             </h2>
             <p className="mt-1 text-sm text-muted">
               Trial includes up to {TRIAL_MAX_VANS} vans and all local features.
