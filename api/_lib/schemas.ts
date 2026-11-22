@@ -72,6 +72,8 @@ export const workspaceImportSchema = z.object({
 })
 
 export const syncActionSchema = z.enum([
+  'van:create',
+  'van:delete',
   'part:increment',
   'part:decrement',
   'part:create',

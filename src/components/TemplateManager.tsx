@@ -15,6 +15,7 @@ import type { PartItem, Van } from '../types'
 import {
   db,
   deletePart,
+  deleteVan,
   loadTemplate,
   resetAllData,
   resetVanUsage,
@@ -67,6 +68,8 @@ export function TemplateManager({
   const [resetOpen, setResetOpen] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [addVanOpen, setAddVanOpen] = useState(false)
+  const [deleteVanOpen, setDeleteVanOpen] = useState(false)
+  const [deletingVan, setDeletingVan] = useState(false)
   const [usageResetOpen, setUsageResetOpen] = useState(false)
   const [resettingUsage, setResettingUsage] = useState(false)
 
@@ -189,6 +192,21 @@ export function TemplateManager({
     }
   }
 
+  const confirmDeleteVan = async () => {
+    setDeletingVan(true)
+    try {
+      const remaining = vans.filter((option) => option.id !== van.id)
+      await deleteVan(van.id)
+      onVanChange(remaining[0]?.id ?? '')
+      onToast(`${van.name} deleted.`, 'success')
+      setDeleteVanOpen(false)
+    } catch {
+      onToast('Could not delete that van.', 'error')
+    } finally {
+      setDeletingVan(false)
+    }
+  }
+
   const confirmReset = async () => {
     setResetting(true)
     try {
@@ -304,6 +322,14 @@ export function TemplateManager({
                 Clear taps
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setDeleteVanOpen(true)}
+              className="flex min-h-14 items-center gap-1.5 rounded-xl border-2 border-line bg-page px-3 text-xs font-bold text-muted transition hover:border-red-500/50 hover:text-red-600 dark:hover:text-red-400"
+            >
+              <Trash2 size={15} />
+              Delete van
+            </button>
           </div>
         </div>
       </section>
@@ -592,6 +618,18 @@ export function TemplateManager({
           if (!resettingUsage) setUsageResetOpen(false)
         }}
         onConfirm={() => void confirmUsageReset()}
+      />
+
+      <ConfirmDialog
+        open={deleteVanOpen}
+        title={`Delete ${van.name}?`}
+        description="This removes the van, its part board, and its orders from this device and syncs the deletion to Team Sync. This cannot be undone."
+        confirmLabel="Delete Van"
+        busy={deletingVan}
+        onCancel={() => {
+          if (!deletingVan) setDeleteVanOpen(false)
+        }}
+        onConfirm={() => void confirmDeleteVan()}
       />
 
       <ConfirmDialog

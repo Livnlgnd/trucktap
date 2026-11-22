@@ -12,6 +12,7 @@ import {
   orderSchema,
   partSchema,
   syncPushSchema,
+  vanSchema,
 } from '../lib/validation.js'
 import type { ServerSyncAction } from '../lib/validation.js'
 import { getSnapshot } from '../lib/workspace.js'
@@ -22,6 +23,10 @@ syncRouter.use(requireAuth)
 
 const incrementPayloadSchema = z.object({
   delta: z.number().int().min(-1).max(1).optional(),
+})
+
+const vanPayloadSchema = z.object({
+  van: vanSchema,
 })
 
 const templatePayloadSchema = z.object({
@@ -74,6 +79,31 @@ function ensureVan(orgId: string, vanId: string): void {
   if (!van) throw new Error('Van not found in this workspace.')
 }
 
+function upsertVan(
+  auth: AuthContext,
+  van: z.infer<typeof vanSchema>,
+): void {
+  const now = nowIso()
+  db.prepare(
+    `INSERT INTO vans
+      (id, org_id, name, tech_name, number, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(org_id, id) DO UPDATE SET
+       name = excluded.name,
+       tech_name = excluded.tech_name,
+       number = excluded.number,
+       updated_at = excluded.updated_at`,
+  ).run(
+    van.id,
+    auth.orgId,
+    van.name,
+    van.techName,
+    van.number,
+    now,
+    now,
+  )
+}
+
 function upsertPart(auth: AuthContext, part: z.infer<typeof partSchema>): void {
   ensureVan(auth.orgId, part.vanId)
   const now = nowIso()
@@ -110,6 +140,31 @@ function applyOperation(
   operation: SyncOperation,
 ): void {
   switch (operation.action) {
+    case 'van:create': {
+      const { van } = parsePayload(vanPayloadSchema, operation.payload)
+      if (van.id !== operation.entityId) {
+        throw new Error('Van payload does not match the operation.')
+      }
+      upsertVan(auth, van)
+      return
+    }
+
+    case 'van:delete': {
+      db.prepare('DELETE FROM orders WHERE org_id = ? AND van_id = ?').run(
+        auth.orgId,
+        operation.entityId,
+      )
+      db.prepare('DELETE FROM parts WHERE org_id = ? AND van_id = ?').run(
+        auth.orgId,
+        operation.entityId,
+      )
+      db.prepare('DELETE FROM vans WHERE org_id = ? AND id = ?').run(
+        auth.orgId,
+        operation.entityId,
+      )
+      return
+    }
+
     case 'part:increment':
     case 'part:decrement': {
       parsePayload(incrementPayloadSchema, operation.payload)

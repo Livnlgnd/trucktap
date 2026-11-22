@@ -20,6 +20,7 @@ import {
   partSchema,
   registerSchema,
   syncPushSchema,
+  vanSchema,
   workspaceImportSchema,
   type Role,
   type ServerSyncAction,
@@ -421,6 +422,10 @@ const incrementPayloadSchema = z.object({
   delta: z.number().int().min(-1).max(1).optional(),
 })
 
+const vanPayloadSchema = z.object({
+  van: vanSchema,
+})
+
 const templatePayloadSchema = z.object({
   vanId: z.string().min(1).max(120),
   parts: z.array(partSchema).min(1).max(500),
@@ -462,6 +467,25 @@ async function ensureVan(
     vanId,
   ])
   if (!van) throw new Error('Van not found in this workspace.')
+}
+
+async function upsertVan(
+  tx: DbTransaction,
+  auth: AuthContext,
+  van: z.infer<typeof vanSchema>,
+): Promise<void> {
+  const now = new Date().toISOString()
+  await tx.execute(
+    `INSERT INTO vans
+      (id, org_id, name, tech_name, number, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     ON CONFLICT (org_id, id) DO UPDATE SET
+       name = EXCLUDED.name,
+       tech_name = EXCLUDED.tech_name,
+       number = EXCLUDED.number,
+       updated_at = EXCLUDED.updated_at`,
+    [van.id, auth.orgId, van.name, van.techName, van.number, now, now],
+  )
 }
 
 async function upsertPart(
@@ -506,6 +530,29 @@ async function applyOperation(
   operation: SyncOperation,
 ): Promise<void> {
   switch (operation.action) {
+    case 'van:create': {
+      const { van } = parsePayload(vanPayloadSchema, operation.payload)
+      if (van.id !== operation.entityId) {
+        throw new Error('Van payload does not match the operation.')
+      }
+      await upsertVan(tx, auth, van)
+      return
+    }
+    case 'van:delete': {
+      await tx.execute('DELETE FROM orders WHERE org_id = $1 AND van_id = $2', [
+        auth.orgId,
+        operation.entityId,
+      ])
+      await tx.execute('DELETE FROM parts WHERE org_id = $1 AND van_id = $2', [
+        auth.orgId,
+        operation.entityId,
+      ])
+      await tx.execute('DELETE FROM vans WHERE org_id = $1 AND id = $2', [
+        auth.orgId,
+        operation.entityId,
+      ])
+      return
+    }
     case 'part:increment':
     case 'part:decrement': {
       parsePayload(incrementPayloadSchema, operation.payload)

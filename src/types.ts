@@ -40,6 +40,8 @@ export interface RestockOrder {
 }
 
 export type SyncAction =
+  | 'van:create'
+  | 'van:delete'
   | 'part:increment'
   | 'part:decrement'
   | 'part:create'

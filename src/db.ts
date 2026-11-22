@@ -106,6 +106,7 @@ export async function createVan(input: {
 
   return db.transaction('rw', db.vans, db.parts, db.syncQueue, async () => {
     await db.vans.add(van)
+    await queueSync('van:create', 'van', van.id, { van })
 
     const templateParts = input.templateParts ?? []
     if (templateParts.length > 0) {
@@ -414,6 +415,25 @@ export async function loadTemplate(
 
     return parts.length
   })
+}
+
+export async function deleteVan(vanId: string): Promise<void> {
+  await db.transaction(
+    'rw',
+    db.vans,
+    db.parts,
+    db.orders,
+    db.syncQueue,
+    async () => {
+      const van = await db.vans.get(vanId)
+      if (!van) return
+
+      await db.parts.where('vanId').equals(vanId).delete()
+      await db.orders.where('vanId').equals(vanId).delete()
+      await db.vans.delete(vanId)
+      await queueSync('van:delete', 'van', vanId, { name: van.name })
+    },
+  )
 }
 
 export async function resetAllData(): Promise<void> {
