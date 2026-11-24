@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="theme-color" content="#fffdf9" />
-    <title>TruckTap — Van Restock App for Field Techs &amp; Shops</title>
+    <title>TruckTap - Van Restock App for Field Techs &amp; Shops</title>
     <meta
       name="description"
       content="TruckTap is a local-first van restock app for electrical, plumbing, HVAC, and property maintenance teams. Tap used parts, send restock lists, and give the shop a live pick-list. One-time licenses from $99."
@@ -20,7 +20,7 @@
     <meta property="og:site_name" content="TruckTap" />
     <meta
       property="og:title"
-      content="TruckTap — Van Restock App for Field Techs &amp; Shops"
+      content="TruckTap - Van Restock App for Field Techs &amp; Shops"
     />
     <meta
       property="og:description"
@@ -28,10 +28,7 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://trucktap.net/" />
-    <meta
-      property="og:image"
-      content="https://trucktap.net/og-trucktap.png"
-    />
+    <meta property="og:image" content="https://trucktap.net/og-trucktap.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
@@ -41,16 +38,13 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="TruckTap — Van Restock App for Field Techs &amp; Shops"
+      content="TruckTap - Van Restock App for Field Techs &amp; Shops"
     />
     <meta
       name="twitter:description"
       content="Tap used parts. Send a restock list. Shop sees a live pick-list. Local-first and offline-ready."
     />
-    <meta
-      name="twitter:image"
-      content="https://trucktap.net/og-trucktap.png"
-    />
+    <meta name="twitter:image" content="https://trucktap.net/og-trucktap.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -58,6 +52,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="./site.css" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
@@ -77,9 +72,7 @@
             "@id": "https://trucktap.net/#website",
             "url": "https://trucktap.net/",
             "name": "TruckTap",
-            "publisher": {
-              "@id": "https://trucktap.net/#organization"
-            }
+            "publisher": { "@id": "https://trucktap.net/#organization" }
           },
           {
             "@type": "SoftwareApplication",
@@ -96,12 +89,12 @@
               "highPrice": "399",
               "priceCurrency": "USD",
               "offerCount": "3",
-              "url": "https://trucktap.net/#pricing"
+              "url": "https://trucktap.net/pricing.html"
             }
           },
           {
             "@type": "FAQPage",
-            "@id": "https://trucktap.net/#faq",
+            "@id": "https://trucktap.net/faq.html",
             "mainEntity": [
               {
                 "@type": "Question",
@@ -134,13 +127,350 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
-    <noscript>
-      <div style="padding: 2rem; font-family: sans-serif">
-        TruckTap is a local-first van restock app. Enable JavaScript to view the
-        site.
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <a class="brand" href="./index.html">
+          <img src="./icons/icon.svg" alt="" width="40" height="40" />
+          <span><strong>TruckTap</strong><small>Local-first van restock</small></span>
+        </a>
+        <nav class="site-nav">
+          <a class="hide-mobile" href="./features.html">Why TruckTap</a>
+          <a class="hide-mobile" href="./how-it-works.html">How it works</a>
+          <a class="hide-mobile" href="./demo.html">Demo</a>
+          <a class="hide-mobile" href="./pricing.html">Pricing</a>
+          <a class="hide-mobile" href="./faq.html">FAQ</a>
+          <a class="hide-mobile" href="./app.html">Download app</a>
+          <a class="hide-mobile" href="./app/">Open app</a>
+          <a class="nav-cta" href="./pricing.html">Buy TruckTap</a>
+        </nav>
       </div>
-    </noscript>
-    <script type="module" src="/src/landing.tsx"></script>
+    </header>
+
+    <main>
+      <section class="container home-hero">
+        <div>
+          <span class="hero-badge">Local-first · Team Sync optional</span>
+          <h1>
+            Restock the van.<br />
+            <span style="color: var(--accent)">Not the clipboard.</span>
+          </h1>
+          <p class="lede">
+            TruckTap is the glove-friendly restock clicker for field service
+            teams. Techs tap what they used. The shop gets a live pick-list and a
+            clean supplier order — online or off the grid.
+          </p>
+
+          <div class="button-row" style="margin-top: 24px">
+            <a class="button" href="./pricing.html">Buy TruckTap</a>
+            <a
+              class="button button-secondary"
+              href="https://github.com/Livnlgnd/trucktap/releases/download/v1.1.6/TruckTap-Setup-1.1.6.exe"
+            >
+              Windows free trial
+            </a>
+            <a class="button button-secondary" href="./app.html">
+              Get the phone app
+            </a>
+          </div>
+
+          <p class="tiny muted" style="margin-top: 14px">
+            One-time licenses from <strong>$99</strong> · 14-day free trial · No
+            account required
+          </p>
+          <div class="hero-checks">
+            <span>Works offline</span>
+            <span>Desktop + PWA</span>
+            <span>No per-tech fees</span>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="phone-frame hero-phone">
+            <div class="phone-screen">
+              <img
+                src="./screenshots/tech-tiles.png"
+                alt="TruckTap Tech Clicker with parts marked used"
+                style="display: block; width: 100%; height: 100%; object-fit: cover"
+              />
+            </div>
+          </div>
+          <div class="hero-float">
+            <strong>Shop pick-list</strong>
+            <small>3 of 6 lines picked</small>
+            <div class="bar"><span></span></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="trust-strip">
+        <div class="container trust-inner">
+          <span>Built for the people keeping buildings running</span>
+          <div class="footer-links" style="text-transform: none; letter-spacing: 0; font-size: 11px">
+            <span>⚡ Electrical</span>
+            <span>◉ Plumbing</span>
+            <span>▦ Multifamily</span>
+            <span>✚ Maintenance</span>
+          </div>
+        </div>
+      </div>
+
+      <section class="container home-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Why TruckTap</p>
+            <h2>Built for the real job.</h2>
+          </div>
+          <a href="./features.html">See all features →</a>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="hero-icon">⌁</div>
+            <h3>Every tap saves offline</h3>
+            <p>
+              No signal? No problem. The clicker writes to the device immediately,
+              so the basement, the lift, and the dead zone never stop the list.
+            </p>
+          </article>
+          <article class="feature-card">
+            <div class="hero-icon">▤</div>
+            <h3>The shop gets a pick-list</h3>
+            <p>
+              Pending vans, checked-off lines, and a consolidated supplier order.
+              The shop stops translating texts into a restock list.
+            </p>
+          </article>
+          <article class="feature-card">
+            <div class="hero-icon">✓</div>
+            <h3>Buy once. Own it.</h3>
+            <p>
+              One-time licenses start at $99. No mandatory subscription. Team Sync
+              is optional when devices need to share a board.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="container home-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">How it works</p>
+            <h2>Tap, send, pick.</h2>
+          </div>
+          <a href="./how-it-works.html">Read the workflow →</a>
+        </div>
+        <div class="timeline">
+          <div class="timeline-step">
+            <div class="step-number">1</div>
+            <div>
+              <h3>Set up the van</h3>
+              <p>Name it and load a starter trade template, or start empty.</p>
+            </div>
+          </div>
+          <div class="timeline-step">
+            <div class="step-number">2</div>
+            <div>
+              <h3>Tap what you used</h3>
+              <p>Add a job or unit number and send one clean restock list.</p>
+            </div>
+          </div>
+          <div class="timeline-step">
+            <div class="step-number">3</div>
+            <div>
+              <h3>Pick and restock</h3>
+              <p>The shop checks off each line and marks the van restocked.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="container home-section">
+        <div class="split">
+          <div>
+            <p class="eyebrow">Product demo</p>
+            <h2 style="margin-top: 8px">See the whole loop in 28 seconds.</h2>
+            <p class="muted" style="font-size: 15px; line-height: 1.75">
+              One tech taps on a phone. The shop gets the list. Every part stays
+              accounted for — on the device, without an account, and without a
+              signal.
+            </p>
+            <div class="button-row" style="margin-top: 18px">
+              <a class="button" href="./demo.html">Watch the demo</a>
+              <a class="button button-secondary" href="./app.html">
+                Get the phone app
+              </a>
+            </div>
+            <p class="tiny muted" style="margin-top: 12px">
+              9:16 demo · silent with captions
+            </p>
+          </div>
+          <div>
+            <div class="phone-frame">
+              <div class="phone-screen">
+                <video
+                  controls
+                  playsinline
+                  muted
+                  loop
+                  preload="metadata"
+                  poster="./demo/trucktap-demo-poster.jpg"
+                  aria-label="TruckTap product demo"
+                >
+                  <source src="./demo/trucktap-demo-9x16.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="container home-section">
+        <div class="dark-panel">
+          <div class="split">
+            <div>
+              <p class="eyebrow">Optional add-on</p>
+              <h2 style="margin-top: 8px">One shop. Every van in sync.</h2>
+              <p class="muted" style="font-size: 14px; line-height: 1.75">
+                Turn on Team Sync when a tech's phone, the shop tablet, and the
+                office desktop need to share one board. Offline queueing is
+                included; local mode never requires an account.
+              </p>
+              <p style="margin-top: 16px; color: #fdba74; font-weight: 900">
+                $39/month · cancel anytime
+              </p>
+              <div class="button-row" style="margin-top: 14px">
+                <a class="button" href="./team-sync.html" style="background: #f97316; color: #101820">
+                  Team Sync details
+                </a>
+                <a class="button button-secondary" href="./app/" style="background: transparent; color: #fff; border-color: rgba(255,255,255,.25)">
+                  Open the app
+                </a>
+              </div>
+            </div>
+            <ul class="check-list" style="align-self: center">
+              <li>Live phone-to-shop sync</li>
+              <li>Join codes and owner/shop/tech roles</li>
+              <li>Offline queue flushes when connected</li>
+              <li>Local mode always keeps working</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="container home-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Pricing</p>
+            <h2>Buy once. Own it.</h2>
+          </div>
+          <a href="./pricing.html">See full pricing →</a>
+        </div>
+        <div class="price-teaser">
+          <article class="plan-card">
+            <p class="plan-kicker">Up to 3 vans</p>
+            <h2>Starter</h2>
+            <p class="plan-price">$99 <small>one-time</small></p>
+            <p class="plan-note">1 shop workstation · 12 months of updates</p>
+            <a class="button button-secondary" href="./pricing.html">View plan</a>
+          </article>
+          <article class="plan-card featured">
+            <p class="plan-kicker">Up to 10 vans · Most popular</p>
+            <h2>Standard</h2>
+            <p class="plan-price">$199 <small>one-time</small></p>
+            <p class="plan-note">3 shop workstations · 12 months of updates</p>
+            <a class="button" href="./pricing.html">View plan</a>
+          </article>
+          <article class="plan-card">
+            <p class="plan-kicker">Unlimited vans</p>
+            <h2>Advanced</h2>
+            <p class="plan-price">$399 <small>one-time</small></p>
+            <p class="plan-note">Site license · 24 months of updates</p>
+            <a class="button button-secondary" href="./pricing.html">View plan</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="container home-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">FAQ</p>
+            <h2>The short version.</h2>
+          </div>
+          <a href="./faq.html">Read all answers →</a>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>Does TruckTap work without internet?</summary>
+            <p>
+              Yes. The clicker, pick-list, templates, and local data work offline.
+              Team Sync is optional and sends queued changes when connected.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>Is there a required subscription?</summary>
+            <p>
+              No. Buy once and keep using the app. Updates are included for your
+              plan term; renewal is optional. Team Sync is the only recurring
+              product.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>Can we use phones and desktop?</summary>
+            <p>
+              Yes. Run the Windows desktop app, the installable PWA, or both.
+              Team Sync keeps devices on the same workspace when enabled.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>How do we activate a license?</summary>
+            <p>
+              After checkout, copy the signed key from the
+              <a href="./license.html">license page</a> and paste it into License
+              &amp; Downloads in the app.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section class="container home-section">
+        <div class="callout">
+          <div class="split">
+            <div>
+              <p class="eyebrow">Ready when the truck is</p>
+              <h2 style="margin-top: 8px">Put the clipboard down.</h2>
+              <p class="muted small" style="line-height: 1.75">
+                Open the app now or install the Windows build. Local mode is free
+                to explore; one-time licenses start at $99.
+              </p>
+            </div>
+            <div class="button-row" style="align-self: center">
+              <a class="button" href="./app/">Open the app</a>
+              <a class="button button-secondary" href="./pricing.html">
+                Buy TruckTap
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer-inner">
+        <p>© 2026 TruckTap. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="./index.html">Home</a>
+          <a href="./features.html">Why TruckTap</a>
+          <a href="./how-it-works.html">How it works</a>
+          <a href="./demo.html">Demo</a>
+          <a class="hide-mobile" href="./pricing.html">Pricing</a>
+          <a href="./team-sync.html">Team Sync</a>
+          <a href="./faq.html">FAQ</a>
+          <a href="./license.html">License lookup</a>
+          <a href="./support.html">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./terms.html">Terms</a>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>

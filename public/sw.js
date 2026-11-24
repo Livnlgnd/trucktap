@@ -18,6 +18,8 @@ function sameOriginAsset(value) {
     const url = new URL(value, self.location.origin + BASE)
     if (url.origin !== self.location.origin) return null
     if (!url.pathname.startsWith(BASE)) return null
+    // Large demo video: stream on demand instead of precaching the app shell.
+    if (url.pathname.endsWith('.mp4')) return null
     return url.pathname + url.search
   } catch {
     return null

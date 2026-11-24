@@ -32,7 +32,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        landing: path.resolve(process.cwd(), 'index.html'),
+        home: path.resolve(process.cwd(), 'index.html'),
         app: path.resolve(process.cwd(), 'app/index.html'),
       },
     },
