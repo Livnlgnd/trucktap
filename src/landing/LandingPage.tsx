@@ -49,12 +49,12 @@ function checkoutHref(planId: string): string {
 }
 
 const navLinks = [
-  { label: 'Why TruckTap', href: '#features' },
-  { label: 'How it works', href: '#how-it-works' },
-  { label: 'Demo', href: '#demo' },
-  { label: 'Pricing', href: '#pricing' },
-  { label: 'Team Sync', href: '#team-sync' },
-  { label: 'FAQ', href: '#faq' },
+  { label: 'Why TruckTap', href: `${BASE}features.html` },
+  { label: 'How it works', href: `${BASE}how-it-works.html` },
+  { label: 'Demo', href: `${BASE}demo.html` },
+  { label: 'Pricing', href: `${BASE}pricing.html` },
+  { label: 'Team Sync', href: `${BASE}team-sync.html` },
+  { label: 'FAQ', href: `${BASE}faq.html` },
   { label: 'Download app', href: DOWNLOAD_HREF },
   { label: 'About', href: `${BASE}about.html` },
   { label: 'Support', href: `${BASE}support.html` },
@@ -238,7 +238,7 @@ function Header() {
         </nav>
         <div className="flex items-center gap-2">
           <a
-            href="#pricing"
+            href={`${BASE}pricing.html`}
             className="hidden min-h-11 items-center gap-2 rounded-xl bg-[#c2410c] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#9a3412] sm:flex"
           >
             Buy TruckTap
@@ -269,7 +269,7 @@ function Header() {
               </a>
             ))}
             <a
-              href="#pricing"
+              href={`${BASE}pricing.html`}
               onClick={() => setOpen(false)}
               className="mt-4 flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#c2410c] px-5 text-sm font-black text-white"
             >
@@ -513,7 +513,7 @@ function Hero() {
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <a
-                href="#pricing"
+                href={`${BASE}pricing.html`}
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#c2410c] px-6 text-sm font-black text-white shadow-[0_12px_30px_-12px_rgba(194,65,12,0.7)] transition hover:bg-[#9a3412]"
               >
                 Buy TruckTap

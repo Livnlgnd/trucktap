@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAQ — TruckTap Licensing, Offline Use, and Team Sync</title>
+    <meta
+      name="description"
+      content="Answers about TruckTap offline use, one-time licenses, updates, Team Sync, accidental taps, and local data."
+    />
+    <link rel="canonical" href="https://trucktap.net/faq.html" />
+    <meta name="theme-color" content="#fffdf9" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./site.css" />
+    <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <a class="brand" href="./index.html">
+          <img src="./icons/icon.svg" alt="" width="40" height="40" />
+          <span><strong>TruckTap</strong><small>FAQ</small></span>
+        </a>
+        <nav class="site-nav">
+          <a class="hide-mobile" href="./features.html">Why TruckTap</a>
+          <a class="hide-mobile" href="./how-it-works.html">How it works</a>
+          <a class="hide-mobile" href="./demo.html">Demo</a>
+          <a href="./pricing.html">Pricing</a>
+          <a class="hide-mobile" href="./faq.html">FAQ</a>
+          <a class="hide-mobile" href="./app.html">Download app</a>
+          <a href="./app/">Open app</a>
+          <a class="nav-cta" href="./pricing.html">Buy TruckTap</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <div class="container-narrow">
+        <div class="page-hero">
+          <p class="eyebrow">FAQ</p>
+          <h1>The short version.</h1>
+          <p class="lede">
+            Answers for the shop owner, the warehouse runner, and the tech
+            standing in a mechanical room.
+          </p>
+        </div>
+
+        <div class="faq-list" style="margin-top: 28px">
+          <details class="faq-item">
+            <summary>Does TruckTap work without internet?</summary>
+            <p>
+              Yes. The clicker, shop pick-list, templates, and local order data
+              work completely offline. Every tap is saved directly to the device.
+              Team Sync is optional and sends queued changes when a connection is
+              available.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>How much does TruckTap cost?</summary>
+            <p>
+              TruckTap is sold as a one-time license per shop. Starter is $99,
+              Standard is $199, and Advanced is $399. Optional maintenance
+              renewals are $49, $99, and $149 per year. The only recurring product
+              is the optional $39/month Team Sync add-on.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>Is there a required subscription?</summary>
+            <p>
+              No. You can buy TruckTap once and keep using the app forever.
+              Updates are included for the term of your plan, and renewal is
+              optional. Offline tapping, pick-lists, and CSV export are never
+              locked behind Team Sync.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>Do I need Team Sync?</summary>
+            <p>
+              Only if techs and the shop need to see the same board across
+              different devices. A single shared shop tablet or desktop can run
+              completely locally. Team Sync adds live phone-to-shop sync,
+              accounts, roles, and join codes.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>How do techs fix an accidental tap?</summary>
+            <p>
+              Every active tile has a dedicated -1 button, and holding the tile
+              also subtracts one. No menu, no confirmation dialog, no slowing the
+              crew down.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>Can we use TruckTap on phones and desktop?</summary>
+            <p>
+              Yes. The field app is an installable PWA for iOS and Android, and
+              the shop app runs in the browser, as a Windows desktop app, or on a
+              shop tablet. The same workspace follows you across devices when
+              Team Sync is enabled.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>What happens if we stop paying for updates?</summary>
+            <p>
+              The app keeps working. Maintenance is optional and only covers new
+              updates and support. You can renew later without losing your local
+              data.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>Where is our data stored?</summary>
+            <p>
+              Local mode keeps everything in IndexedDB on your device. Team Sync
+              stores the shared workspace in a hosted Postgres database so other
+              devices can receive snapshots. You can disconnect Team Sync and
+              keep a local copy.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>How do we get a license key after buying?</summary>
+            <p>
+              After Stripe checkout, the confirmation returns to the license page
+              with your signed key. You can also open
+              <a href="./license.html">License lookup</a> and paste the checkout
+              session ID from your receipt.
+            </p>
+          </details>
+          <details class="faq-item">
+            <summary>Where do we enter the key?</summary>
+            <p>
+              Open TruckTap and choose <strong>License &amp; Downloads</strong>,
+              then paste the key and select <strong>Activate License</strong>. The
+              key is verified offline on the device.
+            </p>
+          </details>
+        </div>
+
+        <section class="callout" style="margin-top: 28px">
+          <div class="split">
+            <div>
+              <p class="eyebrow">Still deciding?</p>
+              <h2 style="margin-top: 8px">Try it for 14 days.</h2>
+              <p class="muted small" style="line-height: 1.75">
+                The trial includes the full local app for up to 3 vans. No credit
+                card and no account required.
+              </p>
+            </div>
+            <div class="button-row" style="align-self: center">
+              <a class="button" href="./app/">Open the app</a>
+              <a class="button button-secondary" href="./pricing.html">
+                See pricing
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer-inner">
+        <p>© 2026 TruckTap. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="./index.html">Home</a>
+          <a href="./features.html">Why TruckTap</a>
+          <a href="./pricing.html">Pricing</a>
+          <a href="./demo.html">Demo</a>
+          <a href="./license.html">License lookup</a>
+          <a href="./support.html">Support</a>
+          <a href="./privacy.html">Privacy</a>
+          <a href="./terms.html">Terms</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
