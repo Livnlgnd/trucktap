@@ -43,7 +43,7 @@ From the repository root:
 
 ```bash
 npm run install:all
-npm run dev:full          # API on :8787 + Vite PWA on :5173
+npm run dev:full          # API on :8787 + Vite web app on :5173
 ```
 
 Or run the backend by itself:

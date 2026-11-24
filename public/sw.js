@@ -5,7 +5,6 @@ const APP_SHELL = [
   `${BASE}index.html`,
   `${BASE}app.html`,
   `${BASE}app/index.html`,
-  `${BASE}manifest.json`,
   `${BASE}icons/icon.svg`,
   `${BASE}icons/icon-192.png`,
   `${BASE}icons/icon-512.png`,

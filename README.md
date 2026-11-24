@@ -15,20 +15,20 @@ https://livnlgnd.github.io/trucktap/
 The repository contains a complete three-part product:
 
 - **Windows desktop app** packaged with Electron
-- **Installable PWA** deployed on Vercel
+- **Web app** deployed on Vercel
 - **Team Sync backend** with accounts, workspaces, roles, and real multi-device sync
 
 ## Quick start — full stack
 
 ```bash
 npm run install:all      # root + server dependencies
-npm run dev:full         # API :8787 + PWA dev server :5173
+npm run dev:full         # API :8787 + web dev server :5173
 ```
 
 Open **http://127.0.0.1:5173** for the web app. The backend health check is at
 **http://127.0.0.1:8787/api/health**.
 
-To serve the built PWA and API from one production-style server:
+To serve the built web app and API from one production-style server:
 
 ```bash
 npm run build
@@ -50,7 +50,7 @@ npm run desktop:dist     # Windows installer in release/
 The prebuilt installer is:
 
 ```text
-release/TruckTap-Setup-1.1.6.exe
+release/TruckTap-Setup-1.1.7.exe
 ```
 
 Desktop details:
@@ -96,13 +96,13 @@ It provides:
 - Idempotent push of offline operations
 - Full workspace snapshot pulls
 - ~8-second polling for remote changes
-- Optional same-origin serving of the built PWA (self-hosted mode)
+- Optional same-origin serving of the built web app (self-hosted mode)
 
 Full setup, API, environment, Docker, and security details are in
 [docs/BACKEND.md](docs/BACKEND.md). Hosted deployment details are in
 [docs/WEB.md](docs/WEB.md).
 
-## PWA / web app
+## Web app
 
 ```bash
 npm run dev
@@ -126,7 +126,7 @@ offline app launches.
 - `lucide-react` icons
 - Electron + electron-builder for Windows
 - Express 5 + Zod + `node:sqlite` for Team Sync
-- Installable PWA manifest + versioned service worker
+- Versioned service worker for offline web use
 
 ## What is included
 

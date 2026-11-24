@@ -53,7 +53,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./site.css" />
-    <link rel="manifest" href="./manifest.json" />
     <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <script type="application/ld+json">
@@ -164,13 +163,11 @@
             <a class="button" href="./pricing.html">Buy TruckTap</a>
             <a
               class="button button-secondary"
-              href="https://github.com/Livnlgnd/trucktap/releases/download/v1.1.6/TruckTap-Setup-1.1.6.exe"
+              href="https://github.com/Livnlgnd/trucktap/releases/download/v1.1.7/TruckTap-Setup-1.1.7.exe"
             >
               Windows free trial
             </a>
-            <a class="button button-secondary" href="./app.html">
-              Get the phone app
-            </a>
+            <a class="button button-secondary" href="./app/">Open the web app</a>
           </div>
 
           <p class="tiny muted" style="margin-top: 14px">
@@ -179,20 +176,24 @@
           </p>
           <div class="hero-checks">
             <span>Works offline</span>
-            <span>Desktop + PWA</span>
+            <span>Windows + web</span>
             <span>No per-tech fees</span>
           </div>
         </div>
 
         <div class="hero-visual">
-          <div class="phone-frame hero-phone">
-            <div class="phone-screen">
-              <img
-                src="./screenshots/tech-tiles.png"
-                alt="TruckTap Tech Clicker with parts marked used"
-                style="display: block; width: 100%; height: 100%; object-fit: cover"
-              />
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+              <span class="browser-dot"></span>
+              <span class="browser-url">trucktap.net/app/</span>
             </div>
+            <img
+              class="browser-shot"
+              src="./screenshots/tech-desktop.png"
+              alt="TruckTap desktop Tech Clicker with parts marked used"
+            />
           </div>
           <div class="hero-float">
             <strong>Shop pick-list</strong>
@@ -289,15 +290,13 @@
             <p class="eyebrow">Product demo</p>
             <h2 style="margin-top: 8px">See the whole loop in 28 seconds.</h2>
             <p class="muted" style="font-size: 15px; line-height: 1.75">
-              One tech taps on a phone. The shop gets the list. Every part stays
+              One tech taps in the browser. The shop gets the list. Every part stays
               accounted for — on the device, without an account, and without a
               signal.
             </p>
             <div class="button-row" style="margin-top: 18px">
               <a class="button" href="./demo.html">Watch the demo</a>
-              <a class="button button-secondary" href="./app.html">
-                Get the phone app
-              </a>
+              <a class="button button-secondary" href="./app/">Open the web app</a>
             </div>
             <p class="tiny muted" style="margin-top: 12px">
               9:16 demo · silent with captions
@@ -331,7 +330,7 @@
               <p class="eyebrow">Optional add-on</p>
               <h2 style="margin-top: 8px">One shop. Every van in sync.</h2>
               <p class="muted" style="font-size: 14px; line-height: 1.75">
-                Turn on Team Sync when a tech's phone, the shop tablet, and the
+                Turn on Team Sync when a field device, the shop tablet, and the
                 office desktop need to share one board. Offline queueing is
                 included; local mode never requires an account.
               </p>
@@ -348,7 +347,7 @@
               </div>
             </div>
             <ul class="check-list" style="align-self: center">
-              <li>Live phone-to-shop sync</li>
+              <li>Live field-to-shop sync</li>
               <li>Join codes and owner/shop/tech roles</li>
               <li>Offline queue flushes when connected</li>
               <li>Local mode always keeps working</li>
@@ -415,9 +414,9 @@
             </p>
           </details>
           <details class="faq-item">
-            <summary>Can we use phones and desktop?</summary>
+            <summary>Can we use the web app and desktop?</summary>
             <p>
-              Yes. Run the Windows desktop app, the installable PWA, or both.
+              Yes. Run the Windows desktop app, the browser web app, or both.
               Team Sync keeps devices on the same workspace when enabled.
             </p>
           </details>

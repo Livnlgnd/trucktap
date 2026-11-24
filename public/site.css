@@ -1184,3 +1184,46 @@ h3 {
     padding: 24px;
   }
 }
+
+.browser-frame {
+  width: min(560px, 100%);
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 30px 80px -35px rgba(15, 23, 42, 0.45);
+}
+
+.browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+  background: #f1f5f9;
+  padding: 9px 12px;
+}
+
+.browser-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.browser-url {
+  flex: 1;
+  margin-left: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  padding: 4px 8px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.browser-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}

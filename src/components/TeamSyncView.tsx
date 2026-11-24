@@ -236,7 +236,7 @@ export function TeamSyncView({
           Team Sync
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
-          Connect tech phones, shop workstations, and the desktop app. Local taps
+          Connect field devices, shop workstations, and the desktop app. Local taps
           keep working offline and queue automatically.
         </p>
       </div>
@@ -252,7 +252,7 @@ export function TeamSyncView({
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               TruckTap still works entirely on its own. Turn on Team Sync when
-              you want a tech’s phone, the shop tablet, and the office desktop
+              you want a field device, the shop tablet, and the office desktop
               to share the same restock board.
             </p>
 
@@ -530,7 +530,7 @@ export function TeamSyncView({
                 </button>
               </div>
               <p className="mt-2 text-[10px] leading-relaxed text-muted">
-                Defaults to the local server or the same origin hosting the PWA.
+                Defaults to the local server or the same origin hosting the web app.
               </p>
             </details>
           </section>

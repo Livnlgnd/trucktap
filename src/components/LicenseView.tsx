@@ -590,8 +590,8 @@ export function LicenseView({
             ) : (
               <>
                 <p className="mt-1 text-xs leading-relaxed text-muted">
-                  Use the Windows installer or install the PWA on a phone,
-                  tablet, or shop computer.
+                  Use the Windows installer or open the web app on another
+                  computer.
                 </p>
                 <div className="mt-4 space-y-2">
                   <a

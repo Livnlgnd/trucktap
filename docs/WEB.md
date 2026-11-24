@@ -4,7 +4,7 @@
 **Vercel (API + fallback site):** https://trucktap-blush.vercel.app  
 **GitHub Pages hostname:** https://livnlgnd.github.io/trucktap/
 
-All deployments run the full TruckTap PWA: the offline-first clicker, shop
+All deployments run the full TruckTap web app: the offline-first clicker, shop
 pick-lists, template management, local CSV export, and Team Sync.
 
 The custom domain is attached to the GitHub Pages site. DNS is hosted on
@@ -14,8 +14,8 @@ Team Sync API stays on Vercel and is called cross-origin from `trucktap.net`.
 ## Hosted architecture
 
 - **Landing page:** `/` — product overview, workflow, pricing, FAQ, and CTAs
-- **Install page:** `/app.html` - phone/desktop install instructions
-- **App:** `/app/` - the installable PWA and full field/shop application
+- **Install page:** `/app.html` - Windows and browser access
+- **App:** `/app/` - the web app and full field/shop application
 - **Frontend/PWA:** Vite multi-page build deployed to GitHub Pages at the custom
   domain root, with a Vercel deployment as a fallback
 - **Team Sync API:** Vercel Functions in `api/`
