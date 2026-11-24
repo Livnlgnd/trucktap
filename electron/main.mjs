@@ -21,7 +21,7 @@ const ROOT_DIR = path.join(__dirname, '..')
 const DIST_DIR = path.join(ROOT_DIR, 'dist')
 const APP_SCHEME = 'trucktap'
 const APP_HOST = 'app'
-const APP_URL = `${APP_SCHEME}://${APP_HOST}/app.html`
+const APP_URL = `${APP_SCHEME}://${APP_HOST}/app/index.html`
 const ADMIN_URL = `${APP_SCHEME}://${APP_HOST}/admin/index.html`
 const CONSOLE_API_BASE =
   process.env.TRUCKTAP_LICENSE_API ||
@@ -509,7 +509,7 @@ function createWindow() {
   })
 
   if (IS_DEV) {
-    void mainWindow.loadURL(`${DEV_SERVER_URL.replace(/\/$/, '')}/app.html`)
+    void mainWindow.loadURL(`${DEV_SERVER_URL.replace(/\/$/, '')}/app/`)
     if (process.env.TRUCKTAP_DEVTOOLS === '1') {
       mainWindow.webContents.openDevTools({ mode: 'detach' })
     }

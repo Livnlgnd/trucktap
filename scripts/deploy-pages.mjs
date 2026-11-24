@@ -14,7 +14,7 @@ const outputDir = mkdtempSync(path.join(os.tmpdir(), 'trucktap-pages-'))
 try {
   const buildEnv = {
     ...process.env,
-    VITE_BASE_PATH: '/trucktap/',
+    VITE_BASE_PATH: '/',
     VITE_API_URL: 'https://trucktap-blush.vercel.app',
     ELECTRON_SKIP_BINARY_DOWNLOAD: '1',
   }
@@ -29,6 +29,7 @@ try {
 
   cpSync(path.join(root, 'dist'), outputDir, { recursive: true })
   writeFileSync(path.join(outputDir, '.nojekyll'), '')
+  writeFileSync(path.join(outputDir, 'CNAME'), 'trucktap.net\n')
 
   const remote = execSync('git remote get-url origin', {
     cwd: root,

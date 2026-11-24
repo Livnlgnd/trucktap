@@ -28,7 +28,7 @@ import type { ToastTone } from './Toast'
 const BASE = import.meta.env.BASE_URL
 const CHECKOUT_BASE = `${BASE}checkout.html`
 const LICENSE_PAGE = `${BASE}license.html`
-const DOWNLOAD_PAGE = `${BASE}download.html`
+const DOWNLOAD_PAGE = `${BASE}app.html`
 const LICENSE_API =
   'https://keytrack-license.joshua-c77.workers.dev/api/trucktap/license'
 const PLAN_ORDER: TruckTapPlanId[] = ['starter', 'standard', 'advanced']

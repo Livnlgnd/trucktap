@@ -5,10 +5,12 @@ shop/warehouse runners. Techs tap the parts they used on the van, then send a
 restock list in one step. The shop sees a live pick-list and a consolidated
 supplier order — online or offline.
 
-**Live website:** https://livnlgnd.github.io/trucktap/
+**Live website:** https://trucktap.net/
 
-The landing page lives at `/`; the installable app is at `/app.html`.
-Alternate deployment: https://trucktap-blush.vercel.app
+The landing page lives at `/`; the install page is at `/app.html` and the
+installable app runs at `/app/`.
+Alternate deployments: https://trucktap-blush.vercel.app and
+https://livnlgnd.github.io/trucktap/
 
 The repository contains a complete three-part product:
 
@@ -48,7 +50,7 @@ npm run desktop:dist     # Windows installer in release/
 The prebuilt installer is:
 
 ```text
-release/TruckTap-Setup-1.1.5.exe
+release/TruckTap-Setup-1.1.6.exe
 ```
 
 Desktop details:
@@ -81,9 +83,9 @@ token. It is not shown in the customer-facing navigation.
 The backend is available in two deployment forms sharing the same API contract:
 
 - **Self-hosted:** TypeScript/Express + Node SQLite (`server/`)
-- **Hosted website:** Vercel Functions + Neon Postgres (`api/`), powering
-  https://trucktap-blush.vercel.app and the GitHub Pages frontend at
-  https://livnlgnd.github.io/trucktap/
+- **Hosted API:** Vercel Functions + Neon Postgres (`api/`), powering Team Sync
+  for the GitHub Pages site at https://trucktap.net (hostname:
+  https://livnlgnd.github.io/trucktap/)
 
 It provides:
 
@@ -108,7 +110,7 @@ npm run build
 npm run preview
 ```
 
-The landing page is served at `/` and the field app at `/app.html`. The service
+The landing page is served at `/` and the field app at `/app/`. The service
 worker is registered by the app in production browser builds only. It caches
 both entry pages and their assets, while skipping `/api/` responses so live Team
 Sync data is never cached as app shell. Use the backend-served build at

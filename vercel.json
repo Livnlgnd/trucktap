@@ -1,6 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
+  "redirects": [
+    { "source": "/app", "destination": "/app/", "permanent": true },
+    { "source": "/download", "destination": "/app.html", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/sw.js",

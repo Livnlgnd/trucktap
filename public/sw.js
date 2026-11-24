@@ -4,6 +4,7 @@ const APP_SHELL = [
   BASE,
   `${BASE}index.html`,
   `${BASE}app.html`,
+  `${BASE}app/index.html`,
   `${BASE}manifest.json`,
   `${BASE}icons/icon.svg`,
   `${BASE}icons/icon-192.png`,
@@ -29,7 +30,7 @@ self.addEventListener('install', (event) => {
       const cache = await caches.open(CACHE_NAME)
       const assetUrls = new Set()
 
-      for (const page of ['index.html', 'app.html']) {
+      for (const page of ['index.html', 'app.html', 'app/index.html']) {
         const shellResponse = await fetch(`${BASE}${page}`, {
           cache: 'no-store',
         })
@@ -83,8 +84,12 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) return
 
   if (request.mode === 'navigate') {
-    const isAppRoute = url.pathname === `${BASE}app.html`
-    const cacheKey = isAppRoute ? `${BASE}app.html` : `${BASE}index.html`
+    const isAppRoute =
+      url.pathname === `${BASE}app` ||
+      url.pathname.startsWith(`${BASE}app/`)
+    const cacheKey = isAppRoute
+      ? `${BASE}app/index.html`
+      : `${BASE}index.html`
 
     event.respondWith(
       fetch(request)

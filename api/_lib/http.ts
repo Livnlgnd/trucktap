@@ -7,6 +7,9 @@ const DEFAULT_ORIGINS = [
   'http://127.0.0.1:4173',
   'http://localhost:8787',
   'http://127.0.0.1:8787',
+  'https://trucktap.net',
+  'https://www.trucktap.net',
+  'https://livnlgnd.github.io',
   'trucktap://app',
   'null',
 ]

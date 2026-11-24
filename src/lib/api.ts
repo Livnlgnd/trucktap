@@ -51,7 +51,11 @@ export function getApiBaseUrl(): string {
 
   if (window.trucktapDesktop?.isDesktop) return 'http://127.0.0.1:8787'
   if (import.meta.env.DEV) return 'http://127.0.0.1:8787'
-  if (window.location.hostname.endsWith('.github.io')) {
+  if (
+    window.location.hostname.endsWith('.github.io') ||
+    window.location.hostname === 'trucktap.net' ||
+    window.location.hostname === 'www.trucktap.net'
+  ) {
     return 'https://trucktap-blush.vercel.app'
   }
 

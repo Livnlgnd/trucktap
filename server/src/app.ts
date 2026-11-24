@@ -129,6 +129,13 @@ if (clientAvailable) {
       next()
       return
     }
+    if (
+      request.path === '/app' ||
+      request.path.startsWith('/app/')
+    ) {
+      response.sendFile(path.join(config.webDist, 'app', 'index.html'))
+      return
+    }
     response.sendFile(path.join(config.webDist, 'index.html'))
   })
 } else {

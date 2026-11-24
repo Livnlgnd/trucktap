@@ -1,17 +1,23 @@
 # TruckTap Web
 
-**GitHub Pages:** https://livnlgnd.github.io/trucktap/  
-**Vercel:** https://trucktap-blush.vercel.app
+**Primary (custom domain, GitHub Pages):** https://trucktap.net/  
+**Vercel (API + fallback site):** https://trucktap-blush.vercel.app  
+**GitHub Pages hostname:** https://livnlgnd.github.io/trucktap/
 
-Both sites run the full TruckTap PWA: the offline-first clicker, shop
+All deployments run the full TruckTap PWA: the offline-first clicker, shop
 pick-lists, template management, local CSV export, and Team Sync.
+
+The custom domain is attached to the GitHub Pages site. DNS is hosted on
+Cloudflare with the GitHub Pages records set to DNS-only (proxy disabled). The
+Team Sync API stays on Vercel and is called cross-origin from `trucktap.net`.
 
 ## Hosted architecture
 
 - **Landing page:** `/` — product overview, workflow, pricing, FAQ, and CTAs
-- **App:** `/app.html` — the installable PWA and full field/shop application
-- **Frontend/PWA:** Vite multi-page build deployed to GitHub Pages (subpath
-  `/trucktap/`) and Vercel (root)
+- **Install page:** `/app.html` - phone/desktop install instructions
+- **App:** `/app/` - the installable PWA and full field/shop application
+- **Frontend/PWA:** Vite multi-page build deployed to GitHub Pages at the custom
+  domain root, with a Vercel deployment as a fallback
 - **Team Sync API:** Vercel Functions in `api/`
 - **Database:** Neon Postgres, provisioned through the Vercel Neon integration
 - **Local persistence:** IndexedDB/Dexie remains the source of truth on each
@@ -19,8 +25,9 @@ pick-lists, template management, local CSV export, and Team Sync.
 - **Service worker:** scoped to its deploy path, versioned by build, caches both
   pages, and never caches `/api/` responses
 
-The GitHub Pages frontend calls the Vercel API cross-origin. CORS on the Vercel
-API allows `https://livnlgnd.github.io` and `trucktap://app` for the desktop app.
+The GitHub Pages site calls the Vercel API cross-origin. CORS on the Vercel API
+allows `https://trucktap.net`, `https://www.trucktap.net`,
+`https://livnlgnd.github.io`, and `trucktap://app` for the desktop app.
 
 ## Deployment
 
@@ -28,14 +35,17 @@ API allows `https://livnlgnd.github.io` and `trucktap://app` for the desktop app
 
 GitHub Pages serves the built files from the `gh-pages` branch:
 
+**https://trucktap.net/**  
 **https://livnlgnd.github.io/trucktap/**
 
 The production frontend build uses:
 
 ```text
-VITE_BASE_PATH=/trucktap/
+VITE_BASE_PATH=/
 VITE_API_URL=https://trucktap-blush.vercel.app
 ```
+
+The deploy script also writes a `CNAME` file containing `trucktap.net`.
 
 Deploy the latest build with:
 
@@ -43,9 +53,9 @@ Deploy the latest build with:
 npm run deploy:pages
 ```
 
-The script builds with the correct base path, publishes only the static bundle
-to `gh-pages`, and keeps source files off the published branch. The Pages site
-calls the Vercel-hosted API cross-origin.
+The script builds with the root base path, publishes only the static bundle to
+`gh-pages`, writes the `CNAME`, and keeps source files off the published branch.
+The Pages site calls the Vercel-hosted API cross-origin.
 
 ### Vercel
 

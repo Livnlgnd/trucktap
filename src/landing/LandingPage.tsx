@@ -36,10 +36,12 @@ import {
 import { cn } from '../lib/utils'
 
 const BASE = import.meta.env.BASE_URL
-const APP_HREF = `${BASE}app.html`
-const DOWNLOAD_HREF = `${BASE}download.html`
+const APP_HREF = `${BASE}app/`
+const DOWNLOAD_HREF = `${BASE}app.html`
 const LICENSE_HREF = `${BASE}license.html`
 const CHECKOUT_HREF = `${BASE}checkout.html`
+const TRIAL_HREF =
+  'https://github.com/Livnlgnd/trucktap/releases/download/v1.1.6/TruckTap-Setup-1.1.6.exe'
 const GITHUB_HREF = 'https://github.com/Livnlgnd/trucktap'
 
 function checkoutHref(planId: string): string {
@@ -52,7 +54,9 @@ const navLinks = [
   { label: 'Pricing', href: '#pricing' },
   { label: 'Team Sync', href: '#team-sync' },
   { label: 'FAQ', href: '#faq' },
-  { label: 'Download', href: DOWNLOAD_HREF },
+  { label: 'Download app', href: DOWNLOAD_HREF },
+  { label: 'About', href: `${BASE}about.html` },
+  { label: 'Support', href: `${BASE}support.html` },
 ]
 
 const plans = [
@@ -230,19 +234,13 @@ function Header() {
               {link.label}
             </a>
           ))}
-          <a
-            href={APP_HREF}
-            className="transition hover:text-slate-950"
-          >
-            Open app
-          </a>
         </nav>
         <div className="flex items-center gap-2">
           <a
-            href={APP_HREF}
+            href="#pricing"
             className="hidden min-h-11 items-center gap-2 rounded-xl bg-[#c2410c] px-4 text-sm font-black text-white shadow-sm transition hover:bg-[#9a3412] sm:flex"
           >
-            Open TruckTap
+            Buy TruckTap
             <ArrowUpRight size={16} />
           </a>
           <button
@@ -270,11 +268,11 @@ function Header() {
               </a>
             ))}
             <a
-              href={APP_HREF}
+              href="#pricing"
               onClick={() => setOpen(false)}
               className="mt-4 flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#c2410c] px-5 text-sm font-black text-white"
             >
-              Open TruckTap
+              Buy TruckTap
               <ArrowUpRight size={17} />
             </a>
           </nav>
@@ -296,7 +294,7 @@ function HeroPreview() {
             <span className="h-2 w-2 rounded-full bg-emerald-300" />
             <div className="mx-auto flex max-w-[260px] flex-1 items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[8px] font-bold text-slate-400">
               <ShieldCheck size={9} />
-              app.trucktap.com
+              trucktap.net
             </div>
             <span className="rounded-full bg-emerald-50 px-2 py-1 text-[7px] font-black uppercase tracking-wide text-emerald-700">
               Saved locally
@@ -512,20 +510,26 @@ function Hero() {
               teams. Techs tap what they used. The shop gets a live pick-list and
               a clean supplier order — online or off the grid.
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <a
-                href={APP_HREF}
+                href="#pricing"
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#c2410c] px-6 text-sm font-black text-white shadow-[0_12px_30px_-12px_rgba(194,65,12,0.7)] transition hover:bg-[#9a3412]"
               >
-                Open TruckTap
+                Buy TruckTap
                 <ArrowRight size={18} />
               </a>
               <a
-                href={DOWNLOAD_HREF}
+                href={TRIAL_HREF}
                 className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 text-sm font-black text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-950"
               >
                 <Download size={18} />
-                Download &amp; install
+                Windows free trial
+              </a>
+              <a
+                href={DOWNLOAD_HREF}
+                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-6 text-sm font-black text-[#9a3412] transition hover:bg-orange-100"
+              >
+                Get the phone app
               </a>
             </div>
             <p className="mt-4 text-xs font-semibold text-slate-500">
