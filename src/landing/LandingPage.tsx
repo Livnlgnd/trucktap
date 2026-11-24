@@ -51,6 +51,7 @@ function checkoutHref(planId: string): string {
 const navLinks = [
   { label: 'Why TruckTap', href: '#features' },
   { label: 'How it works', href: '#how-it-works' },
+  { label: 'Demo', href: '#demo' },
   { label: 'Pricing', href: '#pricing' },
   { label: 'Team Sync', href: '#team-sync' },
   { label: 'FAQ', href: '#faq' },
@@ -942,6 +943,93 @@ function Trades() {
   )
 }
 
+function DemoSection() {
+  return (
+    <section
+      id="demo"
+      className="scroll-mt-24 border-b border-slate-200 bg-[#f7f8f3]"
+    >
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto] lg:gap-16">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#c2410c]">
+              Product demo
+            </p>
+            <h2 className="mt-3 max-w-xl text-3xl font-black tracking-[-0.035em] text-slate-950 sm:text-4xl lg:text-5xl">
+              See the whole loop in 28 seconds.
+            </h2>
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-600">
+              One tech taps on a phone. The shop gets the list. Every part stays
+              accounted for — on the device, without an account, and without a
+              signal.
+            </p>
+
+            <ul className="mt-7 grid max-w-xl gap-3">
+              {[
+                'Set up a van and load a trade template.',
+                'Tap each part you used; every tap saves offline.',
+                'Send one list and let the shop pick it.',
+              ].map((item) => (
+                <li
+                  key={item}
+                  className="flex items-start gap-2.5 text-sm font-semibold text-slate-700"
+                >
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+                    <Check size={12} strokeWidth={3} />
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="#pricing"
+                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-[#c2410c] px-6 text-sm font-black text-white shadow-sm transition hover:bg-[#9a3412]"
+              >
+                Buy TruckTap
+                <ArrowRight size={17} />
+              </a>
+              <a
+                href={DOWNLOAD_HREF}
+                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 text-sm font-black text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
+              >
+                Get the phone app
+              </a>
+            </div>
+          </div>
+
+          <div className="mx-auto w-full max-w-[360px]">
+            <div className="rounded-[2.5rem] border border-slate-800 bg-slate-950 p-2.5 shadow-[0_40px_100px_-35px_rgba(15,23,42,0.65)]">
+              <div className="aspect-[9/16] overflow-hidden rounded-[2rem] bg-black">
+                <video
+                  className="h-full w-full object-cover"
+                  controls
+                  playsInline
+                  muted
+                  loop
+                  preload="metadata"
+                  poster={`${BASE}demo/trucktap-demo-poster.jpg`}
+                  aria-label="TruckTap product demo"
+                >
+                  <source
+                    src={`${BASE}demo/trucktap-demo-9x16.mp4`}
+                    type="video/mp4"
+                  />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+            <p className="mt-3 text-center text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">
+              9:16 demo · 28 seconds
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function TeamSyncSection() {
   return (
     <section
@@ -1414,6 +1502,7 @@ export function LandingPage() {
         <LogoStrip />
         <FeatureSection />
         <HowItWorks />
+        <DemoSection />
         <TwoSides />
         <Trades />
         <TeamSyncSection />
