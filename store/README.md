@@ -32,8 +32,17 @@ uploading the first Play release.
 
 ## GitHub Actions
 
-- `.github/workflows/android.yml` builds a signed AAB/APK and can upload to Play.
-- `.github/workflows/ios.yml` archives, exports, and can upload the IPA.
+The workflow templates are in `store/github-workflows/`. Copy them to
+`.github/workflows/` after granting the GitHub CLI `workflow` scope:
+
+```bash
+gh auth refresh -h github.com -s workflow
+cp store/github-workflows/*.yml .github/workflows/
+git add .github/workflows && git commit -m "Add mobile publishing workflows" && git push
+```
+
+- `store/github-workflows/android.yml` builds a signed AAB/APK and can upload to Play.
+- `store/github-workflows/ios.yml` archives, exports, and can upload the IPA.
 
 Required repository secrets:
 
