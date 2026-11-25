@@ -1227,3 +1227,59 @@ h3 {
   width: 100%;
   height: auto;
 }
+
+.explore-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.explore-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  padding: 20px;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.explore-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.explore-card .eyebrow {
+  margin: 0;
+}
+
+.explore-card h3 {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+}
+
+.explore-card p {
+  flex: 1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.explore-arrow {
+  margin-top: 10px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+@media (max-width: 860px) {
+  .explore-grid {
+    grid-template-columns: 1fr;
+  }
+}
