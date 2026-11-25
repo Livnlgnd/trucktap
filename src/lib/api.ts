@@ -45,7 +45,14 @@ function normalizeBaseUrl(value: string): string {
 
 export function getApiBaseUrl(): string {
   const saved = readStorage(API_BASE_KEY)
-  if (saved) return normalizeBaseUrl(saved)
+  if (saved) {
+    const normalized = normalizeBaseUrl(saved)
+    if (normalized === 'https://trucktap-blush.vercel.app') {
+      writeStorage(API_BASE_KEY, 'https://sync.trucktap.net')
+      return 'https://sync.trucktap.net'
+    }
+    return normalized
+  }
 
   const configured = import.meta.env.VITE_API_URL?.trim()
   if (configured) return normalizeBaseUrl(configured)
