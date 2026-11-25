@@ -1,6 +1,6 @@
 # App Store listing - en-US
 
-**App name:** TruckTap
+**App name:** TrukTap
 
 **Subtitle (30 chars max):**
 Van restock clicker

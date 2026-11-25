@@ -2,7 +2,7 @@
 
 The companion is the same React field app wrapped with Capacitor.
 
-- App name: **TruckTap**
+- App name: **TrukTap** on the App Store (bundle and in-app brand stay TruckTap)
 - Android package: `com.trucktap.mobile`
 - iOS bundle ID: `com.trucktap.mobile`
 - Version: `1.0.0`
