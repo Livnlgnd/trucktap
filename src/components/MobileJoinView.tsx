@@ -1,4 +1,8 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
+import {
+  BarcodeFormat,
+  BarcodeScanner,
+} from '@capacitor-mlkit/barcode-scanning'
 import {
   ArrowRight,
   Camera,
@@ -66,66 +70,34 @@ export function MobileJoinView({
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [scanError, setScanError] = useState('')
-  const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(
-    null,
-  )
-
-  useEffect(() => {
-    if (mode !== 'scan') return
-    let cancelled = false
-
-    const start = async () => {
-      setScanError('')
-      try {
-        const { Html5Qrcode } = await import('html5-qrcode')
-        if (cancelled) return
-        const scanner = new Html5Qrcode('trucktap-qr-reader')
-        scannerRef.current = scanner
-        await scanner.start(
-          { facingMode: 'environment' },
-          { fps: 10, qrbox: { width: 240, height: 240 } },
-          (decoded) => {
-            const payload = parsePairingPayload(decoded)
-            if (!payload.code) return
-            if (payload.server) setApiBaseUrl(payload.server)
-            setJoinCode(payload.code)
-            setMode('join')
-            onToast('Shop code scanned. Finish joining below.', 'success')
-            void scanner.stop().catch(() => undefined)
-          },
-          () => undefined,
-        )
-      } catch (scanFailure) {
-        if (cancelled) return
-        setScanError(
-          scanFailure instanceof Error
-            ? scanFailure.message
-            : 'The camera could not start. Enter the join code instead.',
-        )
+  const scanWithCamera = async () => {
+    setScanError('')
+    try {
+      const permission = await BarcodeScanner.requestPermissions()
+      if (permission.camera !== 'granted') {
+        throw new Error('Camera permission is required to scan the shop QR code.')
       }
-    }
-
-    void start()
-
-    return () => {
-      cancelled = true
-      const scanner = scannerRef.current
-      scannerRef.current = null
-      if (scanner) {
-        void scanner
-          .stop()
-          .catch(() => undefined)
-          .finally(() => {
-            try {
-              scanner.clear()
-            } catch {
-              // The scanner node may already be gone.
-            }
-          })
+      const { barcodes } = await BarcodeScanner.scan({
+        formats: [BarcodeFormat.QrCode],
+      })
+      const value = barcodes.find((barcode) => barcode.rawValue)?.rawValue
+      if (!value) return
+      const payload = parsePairingPayload(value)
+      if (!payload.code) {
+        throw new Error('That QR code is not a TruckTap shop code.')
       }
+      if (payload.server) setApiBaseUrl(payload.server)
+      setJoinCode(payload.code)
+      setMode('join')
+      onToast('Shop code scanned. Finish joining below.', 'success')
+    } catch (scanFailure) {
+      setScanError(
+        scanFailure instanceof Error
+          ? scanFailure.message
+          : 'The camera could not start. Enter the join code instead.',
+      )
     }
-  }, [mode, onToast])
-
+  }
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (busy) return
@@ -207,23 +179,31 @@ export function MobileJoinView({
           </div>
 
           {mode === 'scan' ? (
-            <div className="mt-4">
-              <div
-                id="trucktap-qr-reader"
-                className="overflow-hidden rounded-2xl border border-line bg-black"
-              />
+            <div className="mt-4 rounded-2xl border border-line bg-page p-5 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-accent-ink">
+                <Camera size={26} />
+              </div>
+              <p className="mt-3 text-sm font-black text-ink">Scan the shop QR code.</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                The camera opens in a secure scanner. Point it at the QR code on the
+                desktop Team Sync screen.
+              </p>
               {scanError && (
-                <p className="mt-3 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-xs font-semibold text-warn">
+                <p className="mt-3 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-left text-xs font-semibold text-warn">
                   {scanError}
                 </p>
               )}
-              <p className="mt-3 flex items-center justify-center gap-2 text-[11px] font-semibold text-muted">
-                <Camera size={14} /> Point the camera at the desktop QR code.
-              </p>
+              <button
+                type="button"
+                onClick={() => void scanWithCamera()}
+                className="mt-4 min-h-14 w-full rounded-xl bg-accent px-4 text-sm font-black uppercase tracking-wide text-accent-ink"
+              >
+                Open camera scanner
+              </button>
               <button
                 type="button"
                 onClick={() => setMode('join')}
-                className="mt-3 min-h-12 w-full rounded-xl border border-line bg-page px-4 text-xs font-black text-ink"
+                className="mt-2 min-h-12 w-full rounded-xl border border-line bg-panel px-4 text-xs font-black text-ink"
               >
                 Enter the code instead
               </button>
