@@ -18,6 +18,7 @@
     />
     <link rel="stylesheet" href="./site.css" />
     <link rel="icon" type="image/svg+xml" href="./icons/icon.svg" />
+    <script src="https://js.stripe.com/dahlia/stripe.js"></script>
   </head>
   <body>
     <header class="site-header">
@@ -53,7 +54,7 @@
             $39 <small>/month · cancel anytime</small>
           </p>
           <div class="button-row" style="margin-top: 8px">
-            <a class="button" href="./app/">Open Team Sync</a>
+            <a class="button" href="#subscribe">Start Team Sync</a>
             <a class="button button-secondary" href="./pricing.html">
               See licenses
             </a>
@@ -148,6 +149,25 @@
           devices. It is never required for offline tapping, pick-lists, or CSV
           export.
         </section>
+
+        <section class="panel" id="subscribe" style="margin-top: 20px">
+          <p class="eyebrow">Start Team Sync</p>
+          <h2 style="margin-top: 8px">Live sharing, $39/month.</h2>
+          <p class="muted small" style="line-height: 1.7">
+            Subscribe once per shop. Then open Team Sync on the desktop, create
+            the workspace, and pair phones with the QR code. Cancel anytime.
+          </p>
+          <div class="button-row" style="margin-top: 16px">
+            <button class="button" id="team-sync-subscribe" type="button">
+              Subscribe — $39/month
+            </button>
+            <a class="button button-secondary" href="./app/">Open TruckTap</a>
+          </div>
+          <p class="tiny" id="team-sync-status" style="margin-top: 12px" aria-live="polite">
+            Secure checkout. No card details touch TruckTap.
+          </p>
+          <div id="team-sync-form" style="margin-top: 16px"></div>
+        </section>
       </div>
     </main>
 
@@ -166,5 +186,96 @@
         </div>
       </div>
     </footer>
+    <script>
+      const WORKER = 'https://keytrack-license.joshua-c77.workers.dev'
+      const STRIPE_PUBLISHABLE_KEY =
+        'pk_live_51UXQwhPlnAdoCAVXG0IQQwGGlUNnfdVokvkPB3RDBBbgG5qgQUINZfFGtq21wN2ITwR7eJfqxnZE9vNYQNglyr4n00MwHueF9D'
+      const button = document.getElementById('team-sync-subscribe')
+      const status = document.getElementById('team-sync-status')
+      const formContainer = document.getElementById('team-sync-form')
+      let ready = false
+
+      function setStatus(message) {
+        status.textContent = message
+      }
+
+      async function showReturnStatus() {
+        const sessionId = new URLSearchParams(location.search).get('session_id')
+        if (!sessionId) return
+        setStatus('Checking your Team Sync subscription.')
+        try {
+          const response = await fetch(
+            WORKER + '/api/trucktap/team-sync?session_id=' + encodeURIComponent(sessionId),
+          )
+          const payload = await response.json().catch(() => ({}))
+          if (!response.ok) throw new Error(payload.error || 'Verification failed.')
+          setStatus(
+            payload.active
+              ? 'Team Sync is active' + (payload.email ? ' for ' + payload.email : '') + '. Open Team Sync on the desktop to create the workspace.'
+              : 'Checkout completed, but the subscription is not active yet. Refresh in a minute.',
+          )
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : 'Could not verify checkout.')
+        }
+      }
+
+      async function mountCheckout() {
+        if (ready) return
+        ready = true
+        button.disabled = true
+        setStatus('Preparing secure checkout.')
+        try {
+          const response = await fetch(WORKER + '/api/trucktap/team-sync-checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}',
+          })
+          const payload = await response.json().catch(() => ({}))
+          if (!response.ok || !payload.client_secret) {
+            throw new Error(payload.error || 'Unable to start checkout.')
+          }
+          const stripe = Stripe(STRIPE_PUBLISHABLE_KEY)
+          const checkout = stripe.initCheckoutFormSdk({
+            clientSecret: payload.client_secret,
+            appearance: {
+              theme: 'stripe',
+              labels: 'auto',
+              inputs: 'spaced',
+              variables: {
+                borderRadius: '8px',
+                colorBackground: '#ffffff',
+                colorPrimary: '#c2410c',
+                colorText: '#0f172a',
+                fontFamily: 'Inter, system-ui, sans-serif',
+                fontSizeBase: '15px',
+                spacingUnit: '4px',
+              },
+            },
+          })
+          const form = checkout.createForm({ layout: 'expanded' })
+          form.mount('#team-sync-form')
+          const actions = await checkout.loadActions()
+          if (actions.type !== 'success') throw new Error('Unable to load the payment form.')
+          form.on('confirm', async (event) => {
+            try {
+              await actions.actions.confirm({ formConfirmEvent: event })
+            } catch (error) {
+              setStatus(error instanceof Error ? error.message : 'Payment confirmation failed.')
+              ready = false
+              button.disabled = false
+            }
+          })
+          setStatus('Payment form ready below.')
+          button.textContent = 'Payment form ready below'
+        } catch (error) {
+          ready = false
+          button.disabled = false
+          setStatus(error instanceof Error ? error.message : 'Unable to load checkout.')
+        }
+      }
+
+      button.addEventListener('click', () => void mountCheckout())
+      void showReturnStatus()
+    </script>
   </body>
 </html>

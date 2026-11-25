@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import QRCode from 'qrcode'
 import {
   AlertTriangle,
   Building2,
@@ -86,6 +87,7 @@ export function TeamSyncView({
   const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null)
   const [serverValue, setServerValue] = useState(getApiBaseUrl)
   const [serverSaved, setServerSaved] = useState(false)
+  const [pairQr, setPairQr] = useState('')
 
   const session = controller.session
   const status = statusCopy(controller)
@@ -121,6 +123,30 @@ export function TeamSyncView({
       cancelled = true
     }
   }, [refreshOrganization, sessionToken])
+
+  useEffect(() => {
+    const code = session?.organization.joinCode
+    if (!code) {
+      setPairQr('')
+      return
+    }
+    let cancelled = false
+    const payload = `trucktap://join?code=${encodeURIComponent(code)}&server=${encodeURIComponent(getApiBaseUrl())}`
+    QRCode.toDataURL(payload, {
+      margin: 1,
+      width: 260,
+      color: { dark: '#0f172a', light: '#ffffff' },
+    })
+      .then((url) => {
+        if (!cancelled) setPairQr(url)
+      })
+      .catch(() => {
+        if (!cancelled) setPairQr('')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [session?.organization.joinCode, serverSaved])
 
   const submitAuth = async (event: FormEvent) => {
     event.preventDefault()
@@ -240,6 +266,28 @@ export function TeamSyncView({
           keep working offline and queue automatically.
         </p>
       </div>
+
+      {!session && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-black text-ink">
+              Team Sync is $39/month
+            </p>
+            <p className="text-xs leading-relaxed text-muted">
+              Optional live sharing across the field, shop, and office. Subscribe
+              before creating a workspace.
+            </p>
+          </div>
+          <a
+            href="https://trucktap.net/team-sync.html#subscribe"
+            target="_blank"
+            rel="noreferrer"
+            className="flex min-h-11 items-center gap-2 rounded-xl bg-accent px-4 text-xs font-black uppercase tracking-wide text-accent-ink"
+          >
+            Subscribe
+          </a>
+        </div>
+      )}
 
       {!session ? (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_440px]">
@@ -778,9 +826,21 @@ export function TeamSyncView({
                 <h2 className="text-sm font-black text-ink">Invite the crew</h2>
               </div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Share this code. New teammates create an account, choose Tech or
-                Shop, and pull the shared board.
+                Share this code, or let a phone scan the QR. The phone joins this
+                shop and pulls the shared board.
               </p>
+              {pairQr && (
+                <div className="mt-3 rounded-xl border border-line bg-white p-3 text-center">
+                  <img
+                    src={pairQr}
+                    alt="TruckTap mobile pairing QR code"
+                    className="mx-auto h-40 w-40"
+                  />
+                  <p className="mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
+                    Scan with TruckTap Mobile
+                  </p>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => void copyJoinCode()}

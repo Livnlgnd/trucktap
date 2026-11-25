@@ -18,7 +18,9 @@ import { TemplateManager } from './components/TemplateManager'
 import { TeamSyncView } from './components/TeamSyncView'
 import { LicenseGate, LicenseView } from './components/LicenseView'
 import { FirstRunView } from './components/FirstRunView'
+import { MobileJoinView } from './components/MobileJoinView'
 import { Toast, type ToastData, type ToastTone } from './components/Toast'
+import { isNativeMobile } from './lib/platform'
 
 const VIEW_KEY = 'trucktap.view'
 const VAN_KEY = 'trucktap.active-van'
@@ -175,6 +177,15 @@ function App() {
           activate={license.activate}
           onToast={showToast}
         />
+        <Toast toast={toast} />
+      </>
+    )
+  }
+
+  if (isNativeMobile() && !teamSync.session) {
+    return (
+      <>
+        <MobileJoinView controller={teamSync} onToast={showToast} />
         <Toast toast={toast} />
       </>
     )
