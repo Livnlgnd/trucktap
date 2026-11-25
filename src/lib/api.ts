@@ -5,6 +5,7 @@ import type {
   TeamOrganizationResponse,
   TeamSession,
 } from '../types/team'
+import { isNativeMobile } from './platform'
 
 const API_BASE_KEY = 'trucktap.api-base'
 const SESSION_KEY = 'trucktap.team-session'
@@ -50,6 +51,7 @@ export function getApiBaseUrl(): string {
   if (configured) return normalizeBaseUrl(configured)
 
   if (window.trucktapDesktop?.isDesktop) return 'http://127.0.0.1:8787'
+  if (isNativeMobile()) return 'https://trucktap-blush.vercel.app'
   if (import.meta.env.DEV) return 'http://127.0.0.1:8787'
   if (
     window.location.hostname.endsWith('.github.io') ||

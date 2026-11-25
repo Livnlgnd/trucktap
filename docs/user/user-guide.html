@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>TruckTap User Guide</title>
+    <style>
+      @page {
+        size: Letter;
+        margin: 0.65in 0.7in 0.7in;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: #1b1f26;
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 10.5pt;
+        line-height: 1.5;
+      }
+      h1, h2, h3 { color: #0f172a; margin: 0; }
+      h1 { font-size: 30pt; letter-spacing: -0.04em; line-height: 1.05; }
+      h2 {
+        font-size: 17pt;
+        letter-spacing: -0.02em;
+        margin: 0 0 8pt;
+        padding-bottom: 5pt;
+        border-bottom: 2px solid #c2410c;
+      }
+      h3 { font-size: 12pt; margin: 12pt 0 4pt; }
+      p { margin: 0 0 8pt; }
+      ul, ol { margin: 0 0 10pt 18pt; padding: 0; }
+      li { margin: 0 0 4pt; }
+      .cover {
+        min-height: 8.6in;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        page-break-after: always;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10pt;
+        font-weight: 800;
+        color: #c2410c;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 9pt;
+      }
+      .brand img { width: 30pt; height: 30pt; border-radius: 8pt; }
+      .cover h1 { margin-top: 40pt; max-width: 5.6in; }
+      .cover .lede { font-size: 14pt; color: #475569; max-width: 5.5in; margin-top: 12pt; }
+      .cover .meta { color: #64748b; font-size: 9pt; margin-top: 26pt; }
+      .cover-art {
+        border-radius: 14pt;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 12pt 30pt rgba(15, 23, 42, 0.14);
+        margin-top: 26pt;
+      }
+      .cover-art img { display: block; width: 100%; }
+      .section { page-break-before: always; }
+      .section:first-of-type { page-break-before: auto; }
+      .eyebrow {
+        color: #c2410c;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 8.5pt;
+        margin-bottom: 4pt;
+      }
+      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; }
+      .card {
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        border-radius: 10pt;
+        padding: 10pt 12pt;
+      }
+      .card h3 { margin-top: 0; }
+      .shot {
+        border: 1px solid #e2e8f0;
+        border-radius: 8pt;
+        overflow: hidden;
+        margin: 8pt 0 12pt;
+      }
+      .shot img { display: block; width: 100%; }
+      .caption { font-size: 8.5pt; color: #64748b; margin-top: -6pt; }
+      .callout {
+        border-left: 4px solid #c2410c;
+        background: #fff7ed;
+        padding: 9pt 12pt;
+        border-radius: 0 8pt 8pt 0;
+        margin: 10pt 0;
+      }
+      .callout strong { color: #9a3412; }
+      table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; }
+      th, td { text-align: left; vertical-align: top; padding: 6pt 7pt; border-bottom: 1px solid #e2e8f0; }
+      th { background: #f1f5f9; font-size: 9pt; }
+      code {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 4pt;
+        padding: 1pt 4pt;
+        font-family: Consolas, monospace;
+        font-size: 9pt;
+      }
+      .footer-note {
+        margin-top: 18pt;
+        padding-top: 8pt;
+        border-top: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 8.5pt;
+      }
+      .toc li { margin-bottom: 2pt; }
+      .avoid-break { page-break-inside: avoid; }
+    </style>
+  </head>
+  <body>
+    <section class="cover">
+      <div>
+        <div class="brand">
+          <img src="../../public/icons/icon-192.png" alt="" />
+          TruckTap
+        </div>
+        <h1>User guide for the van restock board.</h1>
+        <p class="lede">
+          Install TruckTap, activate your license, set up a van, tap used parts,
+          and hand the shop a clean pick-list.
+        </p>
+        <p class="meta">
+          Version 1.1.8 &middot; Windows &amp; web &middot; support@trucktap.net
+        </p>
+      </div>
+      <div>
+        <div class="cover-art">
+          <img src="../../public/screenshots/tech-desktop.png" alt="TruckTap Tech Clicker" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Start here</p>
+      <h2>What TruckTap does</h2>
+      <p>
+        TruckTap is a local-first restock board for service vans. A technician taps
+        each part they used. The shop sees a live pick-list and a consolidated
+        supplier order. Everything works offline; Team Sync is optional.
+      </p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Tech Clicker</h3>
+          <p>Tap +1 or -1 on a part. Hold to undo. Counts reset when the van is restocked.</p>
+        </div>
+        <div class="card">
+          <h3>Shop Pick-List</h3>
+          <p>See every van, pick each line, and export the supplier order as CSV.</p>
+        </div>
+        <div class="card">
+          <h3>Van Templates</h3>
+          <p>Name your van and load an Electrical, Plumbing, or Multifamily starter list.</p>
+        </div>
+        <div class="card">
+          <h3>Team Sync</h3>
+          <p>Optional shared workspace for the field, the shop tablet, and the office.</p>
+        </div>
+      </div>
+
+      <h3>What you need</h3>
+      <ul>
+        <li>Windows 10 or 11, 64-bit, for the desktop app.</li>
+        <li>A modern browser for the web app.</li>
+        <li>A TAP license key for use after the 14-day trial.</li>
+        <li>Internet only if you choose Team Sync.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Your data lives on your device.</strong> TruckTap stores the van
+        board in the app's local IndexedDB. There is no TruckTap account and no
+        cloud copy unless you deliberately turn on Team Sync.
+      </div>
+
+      <h3>Contents</h3>
+      <ol class="toc">
+        <li>Install and first launch</li>
+        <li>Activate a license</li>
+        <li>Set up a van</li>
+        <li>Tap used parts</li>
+        <li>Pick and restock</li>
+        <li>Manage parts and templates</li>
+        <li>Team Sync</li>
+        <li>Backups, updates, and troubleshooting</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Step 1</p>
+      <h2>Install and first launch</h2>
+      <ol>
+        <li>
+          Run <code>TruckTap-Setup-1.1.8.exe</code> and accept the Terms of Service
+          shown by the installer.
+        </li>
+        <li>
+          Choose the installation folder. The default per-user location does not
+          require an administrator.
+        </li>
+        <li>
+          Windows SmartScreen may warn because the installer is not code-signed.
+          Choose <strong>More info</strong>, then <strong>Run anyway</strong>.
+        </li>
+        <li>Open TruckTap from the Start menu or desktop shortcut.</li>
+      </ol>
+      <p>
+        The installer also places this guide, a README, and the Terms of Service in
+        the TruckTap program folder. Start menu shortcuts are created under
+        <strong>TruckTap Docs</strong>.
+      </p>
+
+      <div class="callout">
+        <strong>Prefer the browser?</strong> Open
+        <code>https://trucktap.net/app/</code>. The web app uses the same local
+        board and works without an account. Use the desktop app when you want a
+        separate window and a local data folder.
+      </div>
+
+      <h3>First launch</h3>
+      <p>
+        On a new device the app opens with a 14-day trial. If this is your first
+        van, TruckTap asks you to name it and choose a starting parts list. You can
+        skip the template and add parts manually.
+      </p>
+
+      <h3>Where data is stored</h3>
+      <table>
+        <tr><th>Platform</th><th>Location</th></tr>
+        <tr>
+          <td>Windows desktop</td>
+          <td>
+            Use <strong>Help &rarr; Open Data Folder</strong>. IndexedDB lives in
+            the Electron user-data folder.
+          </td>
+        </tr>
+        <tr>
+          <td>Browser</td>
+          <td>Site data for <code>trucktap.net</code> in your browser profile.</td>
+        </tr>
+      </table>
+      <p class="caption">
+        Clearing browser site data or uninstalling without a Team Sync workspace
+        removes the local board. Export the shop list to CSV before wiping a device.
+      </p>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Step 2</p>
+      <h2>Activate a license</h2>
+      <p>
+        A TAP license is signed and verified offline. Open
+        <strong>License &amp; Downloads</strong> and paste the key from your
+        purchase email. Keys start with <code>TAP-</code>.
+      </p>
+      <ol>
+        <li>Open the <strong>License</strong> tab.</li>
+        <li>Paste the full key into the license box.</li>
+        <li>Select <strong>Activate License</strong>.</li>
+        <li>Confirm the plan name and van limit shown on the card.</li>
+      </ol>
+      <p>
+        Lost the email? Open <code>https://trucktap.net/license.html</code> and
+        enter the Stripe checkout session ID from your receipt.
+      </p>
+
+      <h3>Plans at a glance</h3>
+      <table>
+        <tr><th>Plan</th><th>Vans</th><th>Shop stations</th><th>Updates</th></tr>
+        <tr><td>Starter</td><td>3</td><td>1</td><td>12 months</td></tr>
+        <tr><td>Standard</td><td>10</td><td>3</td><td>12 months</td></tr>
+        <tr><td>Advanced</td><td>Unlimited</td><td>Unlimited</td><td>24 months</td></tr>
+      </table>
+      <p>
+        Licenses are per shop, not per technician. The app keeps working after the
+        update window ends; renewals are optional.
+      </p>
+
+      <div class="callout">
+        <strong>Trial expired?</strong> Activate a license to continue. The local
+        board is not deleted when the trial ends.
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Step 3</p>
+      <h2>Set up a van</h2>
+      <p>
+        Open <strong>Manage</strong>. Each van has its own parts list, par levels,
+        and tap counts. A shop can have several vans.
+      </p>
+      <ol>
+        <li>Select <strong>Add van</strong> and give it a clear name, such as “Van 12 — Alex.”</li>
+        <li>Choose a starter template or start empty.</li>
+        <li>Adjust par levels for how many of each part the van should carry.</li>
+        <li>Add, edit, or remove parts at any time.</li>
+      </ol>
+      <p>
+        Starter templates cover common electrical, plumbing, and multifamily
+        maintenance parts. They are a starting point; edit names, categories, and
+        par levels to match your shop.
+      </p>
+      <div class="shot">
+        <img src="../../public/screenshots/tech-tiles.png" alt="TruckTap part tiles" />
+      </div>
+      <p class="caption">Parts are grouped by category and can be searched from the Tech view.</p>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Daily use</p>
+      <h2>Tap used parts</h2>
+      <p>
+        Open <strong>Tech</strong>, pick the van, and tap the part you used.
+        The count updates immediately, even with no signal.
+      </p>
+      <ul>
+        <li>Tap <strong>+1</strong> to add one used part.</li>
+        <li>Tap <strong>-1</strong> to correct an accidental tap.</li>
+        <li>Press and hold to undo, or use the reset action when the van is restocked.</li>
+        <li>Use the search box for a long parts list.</li>
+        <li>Add an optional job or unit tag so the shop knows where the part went.</li>
+      </ul>
+      <div class="shot">
+        <img src="../../public/screenshots/tech-desktop.png" alt="TruckTap Tech Clicker desktop view" />
+      </div>
+      <p class="caption">The Tech Clicker shows the current van, categories, and tap counts.</p>
+      <p>
+        Taps save to the device immediately. If Team Sync is on, the app queues each
+        change and pushes it when a connection is available.
+      </p>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Shop workflow</p>
+      <h2>Pick and restock</h2>
+      <ol>
+        <li>Open <strong>Shop</strong> to see every van with pending lines.</li>
+        <li>Pick each item and mark it picked.</li>
+        <li>Export the consolidated supplier order as CSV when it is time to order.</li>
+        <li>When the van is loaded, mark the order restocked and reset the day's taps.</li>
+      </ol>
+      <div class="shot">
+        <img src="../../public/screenshots/shop-lines.png" alt="TruckTap shop pick-list" />
+      </div>
+      <p class="caption">The shop pick-list consolidates lines across vans for one supplier order.</p>
+
+      <h3>Send a restock list</h3>
+      <p>
+        From the Tech view, open the confirmation drawer and send the list. In local
+        mode the list is available on the same device's Shop tab. With Team Sync, it
+        appears on every connected device.
+      </p>
+
+      <h3>Reset a van</h3>
+      <p>
+        After restocking, use <strong>Clear tap counts</strong> on that van. The parts
+        and par levels stay; only the used counts reset.
+      </p>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Admin</p>
+      <h2>Manage parts and templates</h2>
+      <p>
+        The <strong>Manage</strong> tab is the parts catalog for each van. Changes
+        sync to connected devices when Team Sync is enabled.
+      </p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Add or edit a part</h3>
+          <p>Set the name, category, par level, and optional supplier note. Save to apply it to this van.</p>
+        </div>
+        <div class="card">
+          <h3>Load a template</h3>
+          <p>Load a trade starter list into an existing van without replacing parts already there.</p>
+        </div>
+        <div class="card">
+          <h3>Delete a van</h3>
+          <p>Removing a van removes its local parts and history. Export any needed data first.</p>
+        </div>
+        <div class="card">
+          <h3>Reset local data</h3>
+          <p>Use the reset action only when you intend to wipe the device's board. It cannot be undone.</p>
+        </div>
+      </div>
+
+      <h3>Export and reporting</h3>
+      <p>
+        The Shop view exports the current supplier order as CSV. Open it in Excel,
+        Google Sheets, or your purchasing system. For a full backup, use Team Sync
+        to keep a shared copy, or copy the desktop data folder while TruckTap is closed.
+      </p>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Optional</p>
+      <h2>Team Sync</h2>
+      <p>
+        Team Sync connects the field, the shop tablet, and the office to one shared
+        workspace. It is optional; local mode never requires an account.
+      </p>
+      <ol>
+        <li>Open <strong>Team</strong>.</li>
+        <li>Create a workspace, or join one with the shop's join code.</li>
+        <li>Invite technicians and shop runners with the join code.</li>
+        <li>Keep working offline; queued taps sync when the device reconnects.</li>
+      </ol>
+      <table>
+        <tr><th>Role</th><th>Typical use</th></tr>
+        <tr><td>Owner</td><td>Billing, workspace, and member management.</td></tr>
+        <tr><td>Shop</td><td>Pick lists, restock, and supplier order.</td></tr>
+        <tr><td>Tech</td><td>Tap used parts and submit restock lists.</td></tr>
+      </table>
+      <p>
+        The server address is configurable under <strong>Team Sync &rarr; Server
+        settings</strong> while signed out. Use the default hosted address unless
+        your shop runs its own server.
+      </p>
+      <div class="callout">
+        <strong>Disconnecting is safe.</strong> Signing out stops sync but keeps a
+        local copy on the device. Reconnect later to resume the shared board.
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Keep it healthy</p>
+      <h2>Backups, updates, and troubleshooting</h2>
+      <h3>Backups</h3>
+      <ul>
+        <li>Keep Team Sync on for a shared, recoverable copy of the board.</li>
+        <li>Export the supplier order CSV before clearing a device.</li>
+        <li>On Windows, close TruckTap before copying its data folder.</li>
+      </ul>
+
+      <h3>Updates</h3>
+      <p>
+        Download newer installers from <code>https://trucktap.net/app.html</code>.
+        Installing over an existing copy keeps local data. Update access depends on
+        the license window; the app continues to run after it ends.
+      </p>
+
+      <h3>Common fixes</h3>
+      <table>
+        <tr><th>Problem</th><th>Try this</th></tr>
+        <tr>
+          <td>SmartScreen blocks the installer</td>
+          <td>Choose <strong>More info &rarr; Run anyway</strong>.</td>
+        </tr>
+        <tr>
+          <td>License will not activate</td>
+          <td>Paste the full <code>TAP-</code> key, including the signature after the dot.</td>
+        </tr>
+        <tr>
+          <td>Team Sync shows offline</td>
+          <td>Check the server address and internet connection. Local tapping still works.</td>
+        </tr>
+        <tr>
+          <td>Local board is empty after a browser clean-up</td>
+          <td>Restore from Team Sync, or re-import your data. Browser site data was cleared.</td>
+        </tr>
+        <tr>
+          <td>Cannot open the app after uninstalling</td>
+          <td>Reinstall from the website; license keys are not tied to the installation.</td>
+        </tr>
+      </table>
+
+      <h3>Support</h3>
+      <p>
+        Email <strong>support@trucktap.net</strong> with the TruckTap version,
+        Windows version, the exact error, and your plan name. Never send a full
+        license key in a public message.
+      </p>
+      <p>
+        Terms: <code>https://trucktap.net/terms.html</code><br />
+        Privacy: <code>https://trucktap.net/privacy.html</code><br />
+        Downloads: <code>https://trucktap.net/app.html</code>
+      </p>
+      <p class="footer-note">
+        TruckTap is provided by Vybelive LLC. TruckTap is licensed, not sold.
+        Copyright 2026 TruckTap. All rights reserved.
+      </p>
+    </section>
+  </body>
+</html>

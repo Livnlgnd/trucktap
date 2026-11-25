@@ -20,7 +20,7 @@ import {
   type TruckTapLicenseState,
   type TruckTapPlanId,
 } from '../lib/license'
-import { isDesktopApp, WEBSITE_BASE } from '../lib/platform'
+import { isDesktopApp, isNativeMobile, WEBSITE_BASE } from '../lib/platform'
 import { cn, pluralize } from '../lib/utils'
 import { ConfirmDialog } from './ConfirmDialog'
 import type { ToastTone } from './Toast'
@@ -474,6 +474,7 @@ export function LicenseView({
   const [removing, setRemoving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const desktop = isDesktopApp()
+  const native = isNativeMobile()
 
   const confirmRemove = async () => {
     setRemoving(true)
@@ -509,9 +510,11 @@ export function LicenseView({
             Your TruckTap license
           </h1>
           <p className="mt-1 text-sm text-muted">
-            {desktop
-              ? 'Activate a license, check your plan, or retrieve a purchase. Everything happens on this device.'
-              : 'Activate a one-time license, check your plan, or install the app on another device.'}
+            {native
+              ? 'Activate your TruckTap license or check the plan on this device.'
+              : desktop
+                ? 'Activate a license, check your plan, or retrieve a purchase. Everything happens on this device.'
+                : 'Activate a one-time license, check your plan, or install the app on another device.'}
           </p>
         </div>
         <button
@@ -557,11 +560,27 @@ export function LicenseView({
             <div className="flex items-center gap-2">
               <Download size={19} className="text-accent" />
               <h2 className="text-base font-black">
-                {desktop ? 'This device' : 'Downloads & installs'}
+                {native
+                  ? 'TruckTap Companion'
+                  : desktop
+                    ? 'This device'
+                    : 'Downloads & installs'}
               </h2>
             </div>
 
-            {desktop ? (
+            {native ? (
+              <>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  This phone shares the same license and Team Sync workspace as
+                  your desktop. Tap used parts, submit restock lists, and pick
+                  from the shop.
+                </p>
+                <div className="mt-4 flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-xs font-bold text-success">
+                  <CheckCircle2 size={17} />
+                  Companion app active
+                </div>
+              </>
+            ) : desktop ? (
               <>
                 <p className="mt-1 text-xs leading-relaxed text-muted">
                   You are running the standalone Windows app. Activate, tap,
@@ -624,6 +643,7 @@ export function LicenseView({
           </section>
         </div>
 
+        {!native && (
         <section className="rounded-2xl border border-line bg-panel p-5">
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
@@ -647,6 +667,7 @@ export function LicenseView({
             </p>
           )}
         </section>
+        )}
       </div>
 
       <ConfirmDialog
@@ -674,6 +695,7 @@ export function LicenseGate({
   onToast: (message: string, tone?: ToastTone) => void
 }) {
   const desktop = isDesktopApp()
+  const native = isNativeMobile()
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-page px-4 py-10 text-ink">
@@ -690,7 +712,7 @@ export function LicenseGate({
           </h1>
           <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted">
             Your local data is safe. Activate a one-time license to keep tapping
-            and sending restock lists, or buy a plan below.
+            and sending restock lists.
           </p>
           {state.trialExpired && state.trialExpiresAt && (
             <p className="mx-auto mt-1 max-w-lg text-[11px] font-semibold text-muted/80">
@@ -734,7 +756,7 @@ export function LicenseGate({
                     />
                   </div>
                 </details>
-              ) : (
+              ) : native ? null : (
                 <a
                   href={LICENSE_PAGE}
                   target="_blank"
@@ -747,6 +769,7 @@ export function LicenseGate({
               )}
             </div>
 
+            {!native && (
             <div className="rounded-2xl border border-line bg-page/70 p-4">
               <div className="flex items-center gap-2">
                 <ShieldCheck size={17} className="text-success" />
@@ -794,11 +817,12 @@ export function LicenseGate({
                 </a>
               )}
             </div>
+            )}
           </div>
         </div>
 
         <p className="mt-4 text-center text-[11px] font-semibold text-muted">
-          {!desktop && (
+          {!desktop && !native && (
             <>
               <button
                 type="button"

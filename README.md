@@ -16,6 +16,7 @@ The repository contains a complete three-part product:
 
 - **Windows desktop app** packaged with Electron
 - **Web app** deployed on Vercel
+- **Android/iOS companion** packaged with Capacitor
 - **Team Sync backend** with accounts, workspaces, roles, and real multi-device sync
 
 ## Quick start — full stack
@@ -50,7 +51,7 @@ npm run desktop:dist     # Windows installer in release/
 The prebuilt installer is:
 
 ```text
-release/TruckTap-Setup-1.1.7.exe
+release/TruckTap-Setup-1.1.8.exe
 ```
 
 Desktop details:
@@ -65,6 +66,26 @@ Desktop details:
 - Team Sync connects to the backend at `http://127.0.0.1:8787` by default.
   The server address can be changed in **Team Sync → Server settings** while
   signed out, or set at build time with `VITE_API_URL`.
+
+## Companion app
+
+The Capacitor companion reuses the same React field app and license model.
+
+`ash
+npm run mobile:sync       # build the mobile bundle and sync native projects
+npm run mobile:android    # open Android Studio
+npm run mobile:ios        # open Xcode (macOS)
+npm run mobile:assets     # regenerate app icons and splash screens
+`
+
+- Android package / iOS bundle ID: com.trucktap.mobile
+- Native builds hide website purchase and download links; users activate a TAP
+  key they already own.
+- Team Sync defaults to the hosted API; local mode works offline.
+- The Android upload key is kept outside the repository.
+- Store listing copy and privacy answers are in store/.
+- Publishing workflows: .github/workflows/android.yml and
+  .github/workflows/ios.yml.
 
 ## License console (admin)
 
@@ -127,6 +148,17 @@ offline app launches.
 - Electron + electron-builder for Windows
 - Express 5 + Zod + `node:sqlite` for Team Sync
 - Versioned service worker for offline web use
+
+## Purchase documents
+
+Every installer includes the user guide PDF, README, and Terms of Service.
+The installer shows the terms before installing, copies the documents into the
+program folder, and adds a **TruckTap Docs** Start menu folder.
+
+- docs/user/user-guide.html - source for the PDF guide
+- docs/user/TruckTap-README.txt
+- uild/license.txt - installer terms page
+- Hosted copies: public/docs/
 
 ## What is included
 

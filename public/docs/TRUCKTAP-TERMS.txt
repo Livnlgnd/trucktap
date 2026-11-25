@@ -1,0 +1,69 @@
+TRUCKTAP TERMS OF SERVICE
+
+Effective date: November 21, 2026
+
+TruckTap is provided by Vybelive LLC. By installing, purchasing, or using
+TruckTap, you agree to these terms. If you do not agree, close this installer
+and do not install the software.
+
+1. LICENSE, NOT SALE
+TruckTap is licensed, not sold. A one-time license grants your shop the right
+to use the app within the van and shop-station limits of the selected plan.
+Starter includes up to 3 vans and 1 shop workstation. Standard includes up to
+10 vans and 3 shop workstations. Advanced is a site license with unlimited
+vans. Licenses are per shop and are not per technician.
+
+2. TRIAL
+New installations may include a 14-day free trial with up to 3 vans. The trial
+is intended for evaluation. When it ends, a valid license is required to
+continue using the app. Your local data remains on the device.
+
+3. PAYMENTS AND UPDATES
+One-time license purchases are processed by Stripe. Starter and Standard
+include 12 months of updates; Advanced includes 24 months. The app continues
+to work after the update window ends. Optional maintenance renewals extend
+update and support access and are never required to keep using the app. Prices
+are in USD and may change for future purchases.
+
+4. TEAM SYNC
+Team Sync is an optional hosted add-on. If you purchase or enable a paid Team
+Sync plan, recurring charges continue until canceled. Team Sync availability
+depends on the hosted service. Disconnecting Team Sync stops synchronization
+but does not automatically delete the local data on your device.
+
+5. ACCEPTABLE USE
+You may not reverse-engineer, crack, redistribute, sublicense, or bypass
+licensing controls in TruckTap. You may not share a license key with another
+organization or use the app in a way that violates applicable law. You are
+responsible for the accuracy of the data your team enters and for maintaining
+backups of local devices.
+
+6. SUPPORT AND AVAILABILITY
+Core local functionality does not depend on a hosted service. Optional Team
+Sync is provided on a best-effort basis and may be interrupted for maintenance.
+We aim to answer support requests, but do not guarantee a particular response
+time unless a separate support agreement says otherwise.
+
+7. REFUNDS
+Contact support with your Stripe checkout session ID if you believe a charge
+is incorrect. Refunds are evaluated under applicable law and the circumstances
+of the purchase. License keys that have been activated may not be eligible for
+a refund.
+
+8. DISCLAIMER AND LIMITATION
+TruckTap is provided "as is" without warranties of any kind, to the maximum
+extent permitted by law. We are not responsible for inventory losses, missed
+restocks, lost profits, or indirect or consequential damages arising from use
+of the app. Our aggregate liability for a claim relating to the app is limited
+to the amount you paid for the applicable license in the 12 months before the
+claim.
+
+9. CHANGES
+We may update these terms as the product evolves. Continued use of the app
+after an update constitutes acceptance of the revised terms.
+
+10. CONTACT
+Questions? Email support@trucktap.net.
+
+Full terms: https://trucktap.net/terms.html
+Privacy:    https://trucktap.net/privacy.html

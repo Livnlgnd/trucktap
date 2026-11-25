@@ -33,3 +33,5 @@ release
 *.db-shm
 .vercel
 .env*
+
+dist-mobile

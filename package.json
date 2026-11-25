@@ -1,7 +1,7 @@
 {
   "name": "trucktap",
   "private": true,
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "Local-first van restock desktop app, PWA, and Team Sync backend for field service teams.",
   "author": "TruckTap",
   "type": "module",
@@ -25,9 +25,17 @@
     "desktop:start": "npm run build && electron .",
     "desktop:stack": "concurrently -k --names api,desktop --prefix-colors magenta,green \"npm run server:start\" \"npm run desktop:start\"",
     "desktop:pack": "npm run build && electron-builder --dir",
-    "desktop:dist": "npm run build && electron-builder --win nsis"
+    "desktop:dist": "npm run build && electron-builder --win nsis",
+    "mobile:build": "cross-env VITE_API_URL=https://trucktap-blush.vercel.app npm run build && node scripts/prepare-mobile.mjs",
+    "mobile:sync": "npm run mobile:build && cap sync",
+    "mobile:android": "npm run mobile:sync && cap open android",
+    "mobile:ios": "npm run mobile:sync && cap open ios",
+    "mobile:assets": "npx @capacitor/assets generate --android --ios"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/ios": "^8.6.2",
     "@neondatabase/serverless": "^1.2.1",
     "dexie": "^4.4.7",
     "dexie-react-hooks": "^4.4.0",
@@ -38,6 +46,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@capacitor/assets": "^4.0.0",
+    "@capacitor/cli": "^8.6.2",
     "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",

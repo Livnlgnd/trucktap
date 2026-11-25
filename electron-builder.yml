@@ -12,6 +12,14 @@ files:
   - package.json
   - '!node_modules/**/*'
 
+extraFiles:
+  - from: docs/user
+    to: .
+    filter:
+      - TruckTap-User-Guide.pdf
+      - TruckTap-README.txt
+      - TRUCKTAP-TERMS.txt
+
 asar: true
 compression: normal
 
@@ -32,3 +40,5 @@ nsis:
   createStartMenuShortcut: true
   shortcutName: TruckTap
   uninstallDisplayName: TruckTap
+  license: license.txt
+  include: build/installer.nsh
