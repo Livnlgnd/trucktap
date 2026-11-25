@@ -50,7 +50,11 @@ export function getApiBaseUrl(): string {
   const configured = import.meta.env.VITE_API_URL?.trim()
   if (configured) return normalizeBaseUrl(configured)
 
-  if (window.trucktapDesktop?.isDesktop) return 'http://127.0.0.1:8787'
+  if (window.trucktapDesktop?.isDesktop) {
+    return import.meta.env.DEV
+      ? 'http://127.0.0.1:8787'
+      : 'https://trucktap-blush.vercel.app'
+  }
   if (isNativeMobile()) return 'https://trucktap-blush.vercel.app'
   if (import.meta.env.DEV) return 'http://127.0.0.1:8787'
   if (

@@ -19,6 +19,10 @@ const defaultOrigins = [
   'http://localhost:8787',
   'http://127.0.0.1:8787',
   'trucktap://app',
+  'https://localhost',
+  'capacitor://localhost',
+  'http://localhost',
+  'https://trucktap-blush.vercel.app',
   'null',
 ]
 

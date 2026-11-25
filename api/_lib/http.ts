@@ -11,6 +11,10 @@ const DEFAULT_ORIGINS = [
   'https://www.trucktap.net',
   'https://livnlgnd.github.io',
   'trucktap://app',
+  'https://localhost',
+  'capacitor://localhost',
+  'http://localhost',
+  'https://trucktap-blush.vercel.app',
   'null',
 ]
 
