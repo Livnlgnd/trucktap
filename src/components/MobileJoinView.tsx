@@ -1,8 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import {
-  BarcodeFormat,
-  BarcodeScanner,
-} from '@capacitor-mlkit/barcode-scanning'
+import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import jsQR from 'jsqr'
 import {
   ArrowRight,
   Camera,
@@ -70,19 +67,33 @@ export function MobileJoinView({
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [scanError, setScanError] = useState('')
-  const scanWithCamera = async () => {
+  const photoInputRef = useRef<HTMLInputElement | null>(null)
+  const scanWithCamera = () => {
     setScanError('')
+    photoInputRef.current?.click()
+  }
+
+  const handleQrPhoto = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
     try {
-      const permission = await BarcodeScanner.requestPermissions()
-      if (permission.camera !== 'granted') {
-        throw new Error('Camera permission is required to scan the shop QR code.')
-      }
-      const { barcodes } = await BarcodeScanner.scan({
-        formats: [BarcodeFormat.QrCode],
+      const bitmap = await createImageBitmap(file)
+      const canvas = document.createElement('canvas')
+      canvas.width = bitmap.width
+      canvas.height = bitmap.height
+      const context = canvas.getContext('2d', { willReadFrequently: true })
+      if (!context) throw new Error('The photo could not be read.')
+      context.drawImage(bitmap, 0, 0)
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+      const result = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'attemptBoth',
       })
-      const value = barcodes.find((barcode) => barcode.rawValue)?.rawValue
-      if (!value) return
-      const payload = parsePairingPayload(value)
+      if (!result?.data) {
+        throw new Error('No TruckTap QR code was found in that photo. Try again.')
+      }
+      const payload = parsePairingPayload(result.data)
       if (!payload.code) {
         throw new Error('That QR code is not a TruckTap shop code.')
       }
@@ -94,10 +105,11 @@ export function MobileJoinView({
       setScanError(
         scanFailure instanceof Error
           ? scanFailure.message
-          : 'The camera could not start. Enter the join code instead.',
+          : 'That photo could not be scanned. Enter the join code instead.',
       )
     }
   }
+
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (busy) return
@@ -185,9 +197,17 @@ export function MobileJoinView({
               </div>
               <p className="mt-3 text-sm font-black text-ink">Scan the shop QR code.</p>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                The camera opens in a secure scanner. Point it at the QR code on the
-                desktop Team Sync screen.
+                Take a photo of the QR code on the desktop Team Sync screen. TruckTap
+                reads the code from the photo.
               </p>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(event) => void handleQrPhoto(event)}
+              />
               {scanError && (
                 <p className="mt-3 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-left text-xs font-semibold text-warn">
                   {scanError}
@@ -195,10 +215,10 @@ export function MobileJoinView({
               )}
               <button
                 type="button"
-                onClick={() => void scanWithCamera()}
+                onClick={scanWithCamera}
                 className="mt-4 min-h-14 w-full rounded-xl bg-accent px-4 text-sm font-black uppercase tracking-wide text-accent-ink"
               >
-                Open camera scanner
+                Take QR photo
               </button>
               <button
                 type="button"
