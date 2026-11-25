@@ -1,5 +1,4 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import QRCode from 'qrcode'
 import {
   AlertTriangle,
   Building2,
@@ -87,7 +86,6 @@ export function TeamSyncView({
   const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null)
   const [serverValue, setServerValue] = useState(getApiBaseUrl)
   const [serverSaved, setServerSaved] = useState(false)
-  const [pairQr, setPairQr] = useState('')
 
   const session = controller.session
   const status = statusCopy(controller)
@@ -123,30 +121,6 @@ export function TeamSyncView({
       cancelled = true
     }
   }, [refreshOrganization, sessionToken])
-
-  useEffect(() => {
-    const code = session?.organization.joinCode
-    if (!code) {
-      setPairQr('')
-      return
-    }
-    let cancelled = false
-    const payload = `trucktap://join?code=${encodeURIComponent(code)}&server=${encodeURIComponent(getApiBaseUrl())}`
-    QRCode.toDataURL(payload, {
-      margin: 1,
-      width: 260,
-      color: { dark: '#0f172a', light: '#ffffff' },
-    })
-      .then((url) => {
-        if (!cancelled) setPairQr(url)
-      })
-      .catch(() => {
-        if (!cancelled) setPairQr('')
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [session?.organization.joinCode, serverSaved])
 
   const submitAuth = async (event: FormEvent) => {
     event.preventDefault()
@@ -826,21 +800,9 @@ export function TeamSyncView({
                 <h2 className="text-sm font-black text-ink">Invite the crew</h2>
               </div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Share this code, or let a phone scan the QR. The phone joins this
-                shop and pulls the shared board.
+                Share this code with a phone. The phone joins this shop and
+                pulls the shared board.
               </p>
-              {pairQr && (
-                <div className="mt-3 rounded-xl border border-line bg-white p-3 text-center">
-                  <img
-                    src={pairQr}
-                    alt="TruckTap mobile pairing QR code"
-                    className="mx-auto h-40 w-40"
-                  />
-                  <p className="mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
-                    Scan with TruckTap Mobile
-                  </p>
-                </div>
-              )}
               <button
                 type="button"
                 onClick={() => void copyJoinCode()}

@@ -1,55 +1,20 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
-import jsQR from 'jsqr'
+import { useState, type FormEvent } from 'react'
 import {
   ArrowRight,
-  Camera,
   CheckCircle2,
   KeyRound,
   LoaderCircle,
-  QrCode,
   ShieldCheck,
   Truck,
   WifiOff,
 } from 'lucide-react'
 import type { TeamSyncController } from '../hooks/useTeamSync'
-import { setApiBaseUrl } from '../lib/api'
 import { cn } from '../lib/utils'
 import type { ToastTone } from './Toast'
 
-type Mode = 'join' | 'signin' | 'scan'
+type Mode = 'join' | 'signin'
 
 const TEAM_SYNC_PURCHASE = 'https://trucktap.net/team-sync.html#subscribe'
-
-function parsePairingPayload(value: string): { code: string; server?: string } {
-  const text = value.trim()
-  if (!text) return { code: '' }
-
-  try {
-    const parsed = JSON.parse(text) as { code?: unknown; server?: unknown }
-    if (typeof parsed.code === 'string') {
-      return {
-        code: parsed.code.trim().toUpperCase(),
-        server: typeof parsed.server === 'string' ? parsed.server.trim() : undefined,
-      }
-    }
-  } catch {
-    // Not JSON; try a URL or plain code below.
-  }
-
-  try {
-    const url = new URL(text)
-    const code = url.searchParams.get('code')?.trim() ?? ''
-    const server = url.searchParams.get('server')?.trim() ?? ''
-    if (code) {
-      return { code: code.toUpperCase(), server: server || undefined }
-    }
-  } catch {
-    // Plain join code.
-  }
-
-  const match = text.toUpperCase().match(/\b[A-Z0-9]{8}\b/)
-  return { code: match?.[0] ?? '' }
-}
 
 export function MobileJoinView({
   controller,
@@ -66,50 +31,6 @@ export function MobileJoinView({
   const [role, setRole] = useState<'tech' | 'shop'>('tech')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const [scanError, setScanError] = useState('')
-  const photoInputRef = useRef<HTMLInputElement | null>(null)
-  const scanWithCamera = () => {
-    setScanError('')
-    photoInputRef.current?.click()
-  }
-
-  const handleQrPhoto = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
-
-    try {
-      const bitmap = await createImageBitmap(file)
-      const canvas = document.createElement('canvas')
-      canvas.width = bitmap.width
-      canvas.height = bitmap.height
-      const context = canvas.getContext('2d', { willReadFrequently: true })
-      if (!context) throw new Error('The photo could not be read.')
-      context.drawImage(bitmap, 0, 0)
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-      const result = jsQR(imageData.data, imageData.width, imageData.height, {
-        inversionAttempts: 'attemptBoth',
-      })
-      if (!result?.data) {
-        throw new Error('No TruckTap QR code was found in that photo. Try again.')
-      }
-      const payload = parsePairingPayload(result.data)
-      if (!payload.code) {
-        throw new Error('That QR code is not a TruckTap shop code.')
-      }
-      if (payload.server) setApiBaseUrl(payload.server)
-      setJoinCode(payload.code)
-      setMode('join')
-      onToast('Shop code scanned. Finish joining below.', 'success')
-    } catch (scanFailure) {
-      setScanError(
-        scanFailure instanceof Error
-          ? scanFailure.message
-          : 'That photo could not be scanned. Enter the join code instead.',
-      )
-    }
-  }
-
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (busy) return
@@ -159,16 +80,15 @@ export function MobileJoinView({
             Join your shop.
           </h1>
           <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-            Scan the QR code shown on your shop desktop, or enter the 8-character
-            join code. Your vans and parts come from the shop.
+            Enter the 8-character join code shown on your shop desktop. Your
+            vans and parts come from the shop.
           </p>
         </div>
 
         <div className="mt-6 rounded-3xl border border-line bg-panel p-4 shadow-xl">
-          <div className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-page p-1">
+          <div className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-page p-1">
             {[
               { id: 'join' as const, label: 'Join' },
-              { id: 'scan' as const, label: 'Scan QR' },
               { id: 'signin' as const, label: 'Sign In' },
             ].map((item) => (
               <button
@@ -190,45 +110,6 @@ export function MobileJoinView({
             ))}
           </div>
 
-          {mode === 'scan' ? (
-            <div className="mt-4 rounded-2xl border border-line bg-page p-5 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-accent-ink">
-                <Camera size={26} />
-              </div>
-              <p className="mt-3 text-sm font-black text-ink">Scan the shop QR code.</p>
-              <p className="mt-1 text-xs leading-relaxed text-muted">
-                Take a photo of the QR code on the desktop Team Sync screen. TruckTap
-                reads the code from the photo.
-              </p>
-              <input
-                ref={photoInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={(event) => void handleQrPhoto(event)}
-              />
-              {scanError && (
-                <p className="mt-3 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-left text-xs font-semibold text-warn">
-                  {scanError}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={scanWithCamera}
-                className="mt-4 min-h-14 w-full rounded-xl bg-accent px-4 text-sm font-black uppercase tracking-wide text-accent-ink"
-              >
-                Take QR photo
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('join')}
-                className="mt-2 min-h-12 w-full rounded-xl border border-line bg-panel px-4 text-xs font-black text-ink"
-              >
-                Enter the code instead
-              </button>
-            </div>
-          ) : (
             <form className="mt-4 space-y-3" onSubmit={(event) => void submit(event)}>
               {mode === 'join' && (
                 <label className="block">
@@ -346,7 +227,7 @@ export function MobileJoinView({
                 ) : mode === 'signin' ? (
                   <ArrowRight size={19} />
                 ) : (
-                  <QrCode size={19} />
+                  <KeyRound size={19} />
                 )}
                 {busy
                   ? 'Connecting.'
@@ -355,12 +236,11 @@ export function MobileJoinView({
                     : 'Join the shop'}
               </button>
             </form>
-          )}
 
           <div className="mt-4 flex items-start gap-2 rounded-xl border border-line bg-page/60 p-3 text-[11px] leading-relaxed text-muted">
             <ShieldCheck size={15} className="mt-0.5 shrink-0 text-success" />
             <span>
-              The shop owner can show the QR code under Team Sync on the desktop.
+              The shop owner can share the join code from Team Sync on the desktop.
               Team Sync is $39/month and optional.
             </span>
           </div>

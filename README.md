@@ -51,7 +51,7 @@ npm run desktop:dist     # Windows installer in release/
 The prebuilt installer is:
 
 ```text
-release/TruckTap-Setup-1.1.12.exe
+release/TruckTap-Setup-1.1.13.exe
 ```
 
 Desktop details:

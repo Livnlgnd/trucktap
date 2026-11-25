@@ -8,8 +8,6 @@
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
         <string>TrukTap</string>
-	<key>NSCameraUsageDescription</key>
-	<string>TruckTap uses the camera to scan your shop's Team Sync QR code.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
