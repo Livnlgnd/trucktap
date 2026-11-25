@@ -32,7 +32,7 @@ ACTIVATE
 --------
 Open the License tab and paste the TAP- license key from your purchase email.
 
-Your key is verified offline on this device. A 14-day trial is available before
+Your key is verified offline on this device. A 30-day trial is available before
 activation. Lost the email? Use https://trucktap.net/license.html with the
 Stripe checkout session ID from your receipt.
 

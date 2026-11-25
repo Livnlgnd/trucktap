@@ -65,7 +65,7 @@ export const PLAN_DETAILS: Record<
   },
 }
 
-export const TRIAL_DAYS = 14
+export const TRIAL_DAYS = 30
 export const TRIAL_MAX_VANS = 3
 const LICENSE_STORAGE_KEY = 'trucktap.license_key'
 const TRIAL_STARTED_KEY = 'trucktap.trial_started_at'

@@ -39,7 +39,7 @@ SET UP YOUR WAY
 Already using TruckTap on Windows? Install the companion, paste your existing
 TAP license key, and optionally sign in to the same Team Sync workspace.
 
-TruckTap is licensed, not sold. A 14-day trial is included.
+TruckTap is licensed, not sold. A 30-day trial is included.
 
 Support: https://trucktap.net/support.html
 Privacy: https://trucktap.net/privacy.html

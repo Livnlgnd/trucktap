@@ -1,6 +1,6 @@
 TRUCKTAP TERMS OF SERVICE
 
-Effective date: November 21, 2026
+Effective date: November 25, 2026
 
 TruckTap is provided by Vybelive LLC. By installing, purchasing, or using
 TruckTap, you agree to these terms. If you do not agree, close this installer
@@ -14,7 +14,7 @@ Starter includes up to 3 vans and 1 shop workstation. Standard includes up to
 vans. Licenses are per shop and are not per technician.
 
 2. TRIAL
-New installations may include a 14-day free trial with up to 3 vans. The trial
+New installations may include a 30-day free trial with up to 3 vans. The trial
 is intended for evaluation. When it ends, a valid license is required to
 continue using the app. Your local data remains on the device.
 
