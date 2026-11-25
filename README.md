@@ -51,7 +51,7 @@ npm run desktop:dist     # Windows installer in release/
 The prebuilt installer is:
 
 ```text
-release/TruckTap-Setup-1.1.9.exe
+release/TruckTap-Setup-1.1.10.exe
 ```
 
 Desktop details:
@@ -63,7 +63,7 @@ Desktop details:
 - IndexedDB and the sync queue live in the app's user-data folder. Use
   **Help → Open Data Folder** in the desktop menu to open it.
 - No service worker inside Electron; packaged assets are local.
-- Team Sync connects to the backend at `http://127.0.0.1:8787` by default.
+- The packaged app connects to Team Sync at `https://sync.trucktap.net` by default.
   The server address can be changed in **Team Sync → Server settings** while
   signed out, or set at build time with `VITE_API_URL`.
 

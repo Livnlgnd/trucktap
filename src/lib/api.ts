@@ -53,16 +53,16 @@ export function getApiBaseUrl(): string {
   if (window.trucktapDesktop?.isDesktop) {
     return import.meta.env.DEV
       ? 'http://127.0.0.1:8787'
-      : 'https://trucktap-blush.vercel.app'
+      : 'https://sync.trucktap.net'
   }
-  if (isNativeMobile()) return 'https://trucktap-blush.vercel.app'
+  if (isNativeMobile()) return 'https://sync.trucktap.net'
   if (import.meta.env.DEV) return 'http://127.0.0.1:8787'
   if (
     window.location.hostname.endsWith('.github.io') ||
     window.location.hostname === 'trucktap.net' ||
     window.location.hostname === 'www.trucktap.net'
   ) {
-    return 'https://trucktap-blush.vercel.app'
+    return 'https://sync.trucktap.net'
   }
 
   if (

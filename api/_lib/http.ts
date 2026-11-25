@@ -15,6 +15,7 @@ const DEFAULT_ORIGINS = [
   'capacitor://localhost',
   'http://localhost',
   'https://trucktap-blush.vercel.app',
+  'https://sync.trucktap.net',
   'null',
 ]
 
