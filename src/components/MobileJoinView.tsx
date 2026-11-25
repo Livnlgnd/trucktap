@@ -16,6 +16,35 @@ type Mode = 'join' | 'signin'
 
 const TEAM_SYNC_PURCHASE = 'https://trucktap.net/team-sync.html#subscribe'
 
+function slugName(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '.')
+      .replace(/^\.+|\.+$/g, '')
+      .slice(0, 24) || 'tech'
+  )
+}
+
+async function pinCredentials(input: {
+  joinCode: string
+  name: string
+  pin: string
+}): Promise<{ email: string; password: string }> {
+  const code = input.joinCode.trim().toLowerCase()
+  const slug = slugName(input.name)
+  const email = `${slug}.${code || 'shop'}@pin.trucktap.local`
+  const data = new TextEncoder().encode(
+    `trucktap-pin:${code}:${slug}:${input.pin.trim()}`,
+  )
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  const password = Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+  return { email, password }
+}
+
 export function MobileJoinView({
   controller,
   onToast,
@@ -26,8 +55,7 @@ export function MobileJoinView({
   const [mode, setMode] = useState<Mode>('join')
   const [joinCode, setJoinCode] = useState('')
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [pin, setPin] = useState('')
   const [role, setRole] = useState<'tech' | 'shop'>('tech')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -38,23 +66,31 @@ export function MobileJoinView({
     setError('')
 
     try {
+      const code = joinCode.trim().toUpperCase()
+      if (!code) {
+        throw new Error('Enter the 8-character join code from the shop desktop.')
+      }
+      if (!name.trim()) {
+        throw new Error('Enter your name.')
+      }
+      if (!/^\d{4,6}$/.test(pin.trim())) {
+        throw new Error('Enter a 4-6 digit PIN.')
+      }
+      const credentials = await pinCredentials({ joinCode: code, name, pin })
       if (mode === 'signin') {
-        await controller.signIn({ email, password })
+        await controller.signIn(credentials)
         onToast('Signed in. Pulling your shop board.', 'success')
       } else {
-        if (!joinCode.trim()) {
-          throw new Error('Enter the 8-character join code from the shop desktop.')
-        }
         await controller.joinWorkspace({
-          name,
-          email,
-          password,
-          joinCode: joinCode.trim().toUpperCase(),
+          name: name.trim(),
+          email: credentials.email,
+          password: credentials.password,
+          joinCode: code,
           role,
         })
         onToast('Joined the shop. Your van board is ready.', 'success')
       }
-      setPassword('')
+      setPin('')
     } catch (joinError) {
       setError(
         joinError instanceof Error
@@ -80,8 +116,8 @@ export function MobileJoinView({
             Join your shop.
           </h1>
           <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-            Enter the 8-character join code shown on your shop desktop. Your
-            vans and parts come from the shop.
+            Enter the shop join code, your name, and a 4-6 digit PIN. Your vans
+            and parts come from the shop.
           </p>
         </div>
 
@@ -161,50 +197,37 @@ export function MobileJoinView({
                 </div>
               )}
 
-              {mode === 'join' && (
-                <label className="block">
-                  <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
-                    Your name
-                  </span>
-                  <input
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    autoComplete="name"
-                    required
-                    placeholder="Alex Rivera"
-                    className="min-h-14 w-full rounded-xl border-2 border-line bg-page px-3 text-sm font-semibold text-ink outline-none focus:border-accent"
-                  />
-                </label>
-              )}
-
               <label className="block">
                 <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
-                  Email
+                  Your name
                 </span>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  autoComplete="email"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  autoComplete="name"
                   required
-                  placeholder="you@shop.com"
+                  placeholder="Alex Rivera"
                   className="min-h-14 w-full rounded-xl border-2 border-line bg-page px-3 text-sm font-semibold text-ink outline-none focus:border-accent"
                 />
               </label>
 
               <label className="block">
                 <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.16em] text-muted">
-                  Password
+                  PIN
                 </span>
                 <input
                   type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={pin}
+                  onChange={(event) =>
+                    setPin(event.target.value.replace(/\D/g, '').slice(0, 6))
+                  }
+                  autoComplete="off"
                   required
-                  minLength={10}
-                  placeholder="At least 10 characters"
-                  className="min-h-14 w-full rounded-xl border-2 border-line bg-page px-3 text-sm font-semibold text-ink outline-none focus:border-accent"
+                  placeholder="4-6 digits"
+                  className="min-h-14 w-full rounded-xl border-2 border-line bg-page px-3 font-mono text-lg font-black tracking-[0.3em] text-ink outline-none focus:border-accent"
                 />
               </label>
 
