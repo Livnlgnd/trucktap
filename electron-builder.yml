@@ -10,7 +10,17 @@ files:
   - dist/**/*
   - electron/**/*
   - package.json
-  - '!node_modules/**/*'
+  - '!node_modules/@capacitor*/**/*'
+  - '!node_modules/@neondatabase/**/*'
+  - '!node_modules/@types/**/*'
+  - '!node_modules/dexie/**/*'
+  - '!node_modules/dexie-react-hooks/**/*'
+  - '!node_modules/lucide-react/**/*'
+  - '!node_modules/react/**/*'
+  - '!node_modules/react-dom/**/*'
+  - '!node_modules/scheduler/**/*'
+  - '!node_modules/ws/**/*'
+  - '!node_modules/zod/**/*'
 
 extraFiles:
   - from: docs/user
@@ -19,6 +29,12 @@ extraFiles:
       - TruckTap-User-Guide.pdf
       - TruckTap-README.txt
       - TRUCKTAP-TERMS.txt
+
+publish:
+  provider: github
+  owner: Livnlgnd
+  repo: trucktap
+  releaseType: release
 
 asar: true
 compression: normal

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { LoaderCircle, RefreshCw, Truck, WifiOff, KeyRound } from 'lucide-react'
+import { Download, LoaderCircle, RefreshCw, Truck, WifiOff, KeyRound } from 'lucide-react'
 import type { AppView } from './types'
 import {
   db,
@@ -21,7 +21,8 @@ import { FirstRunView } from './components/FirstRunView'
 import { MobileJoinView } from './components/MobileJoinView'
 import { TutorialOverlay } from './components/TutorialOverlay'
 import { Toast, type ToastData, type ToastTone } from './components/Toast'
-import { isNativeMobile } from './lib/platform'
+import { isDesktopApp, isNativeMobile } from './lib/platform'
+import { useDesktopUpdate } from './hooks/useDesktopUpdate'
 
 const VIEW_KEY = 'trucktap.view'
 const VAN_KEY = 'trucktap.active-van'
@@ -69,6 +70,7 @@ function App() {
   } = useOnlineStatus()
   const teamSync = useTeamSync(isOnline, ready)
   const license = useLicense(ready)
+  const desktopUpdate = useDesktopUpdate(license.state)
 
   const vans = useLiveQuery(() => db.vans.orderBy('name').toArray(), [])
 
@@ -240,6 +242,85 @@ function App() {
         onToggleTheme={toggleTheme}
         onOpenTutorial={() => setTutorialOpen(true)}
       />
+
+      {isDesktopApp() && desktopUpdate.status && (
+        <>
+          {desktopUpdate.status.state === 'downloaded' && (
+            <div className="border-b border-success/30 bg-success/10">
+              <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-3 py-2 text-[11px] font-bold text-success sm:px-6">
+                <Download size={14} className="shrink-0" />
+                <span>
+                  TruckTap{' '}
+                  {desktopUpdate.status.version
+                    ? `v${desktopUpdate.status.version}`
+                    : 'update'}{' '}
+                  is ready to install.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void desktopUpdate.install()}
+                  className="ml-auto min-h-8 rounded-lg bg-success px-3 text-[10px] font-black uppercase tracking-wide text-white"
+                >
+                  Restart and update
+                </button>
+              </div>
+            </div>
+          )}
+          {desktopUpdate.status.state === 'downloading' && (
+            <div className="border-b border-accent/20 bg-accent/10">
+              <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-3 py-2 text-[11px] font-bold text-ink sm:px-6">
+                <LoaderCircle size={14} className="shrink-0 animate-spin text-accent" />
+                <span>
+                  Downloading TruckTap{' '}
+                  {desktopUpdate.status.version
+                    ? `v${desktopUpdate.status.version}`
+                    : 'update'}
+                  … {desktopUpdate.status.percent}%
+                </span>
+              </div>
+            </div>
+          )}
+          {desktopUpdate.status.state === 'available' &&
+            !desktopUpdate.status.entitled && (
+              <div className="border-b border-warn/25 bg-warn/10">
+                <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 px-3 py-2 text-[11px] font-bold text-warn sm:px-6">
+                  <Download size={14} className="shrink-0" />
+                  <span>
+                    TruckTap{' '}
+                    {desktopUpdate.status.version
+                      ? `v${desktopUpdate.status.version}`
+                      : 'update'}{' '}
+                    is available, but this license’s update window has ended.
+                  </span>
+                  <a
+                    href="https://trucktap.net/pricing.html"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-auto rounded-lg border border-warn/40 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide"
+                  >
+                    Renew
+                  </a>
+                </div>
+              </div>
+            )}
+          {desktopUpdate.status.state === 'error' && (
+            <div className="border-b border-line bg-page">
+              <div className="mx-auto flex w-full max-w-7xl items-center gap-2 px-3 py-2 text-[11px] font-semibold text-muted sm:px-6">
+                <span className="truncate">
+                  Update check: {desktopUpdate.status.error ?? 'unavailable'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void desktopUpdate.check()}
+                  className="ml-auto rounded-lg border border-line px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-ink"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {license.state.source === 'trial' &&
         !license.state.trialExpired &&

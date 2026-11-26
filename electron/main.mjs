@@ -15,6 +15,7 @@ import {
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import electronUpdater from 'electron-updater'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT_DIR = path.join(__dirname, '..')
@@ -29,6 +30,180 @@ const CONSOLE_API_BASE =
 const CONSOLE_ALLOWED_PATHS = [/^\/api\/trucktap\/admin\/licenses$/]
 const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 const IS_DEV = Boolean(DEV_SERVER_URL)
+
+const { autoUpdater } = electronUpdater
+const UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000
+let updateEntitled = false
+let updateTimer = null
+let updaterInitialized = false
+let updateCheckInFlight = false
+let updateStatus = {
+  state: 'idle',
+  version: null,
+  percent: 0,
+  error: null,
+  entitled: false,
+}
+
+function publishUpdateStatus(patch = {}) {
+  updateStatus = { ...updateStatus, ...patch, entitled: updateEntitled }
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed()) {
+      window.webContents.send('updates:status', updateStatus)
+    }
+  }
+  return updateStatus
+}
+
+function scheduleUpdateCheck(delayMs = 15000) {
+  if (updateTimer) clearInterval(updateTimer)
+  updateTimer = null
+  if (!updateEntitled || IS_DEV || !app.isPackaged) return
+  updateTimer = setInterval(() => {
+    void checkForUpdates(false)
+  }, UPDATE_INTERVAL_MS)
+  updateTimer.unref?.()
+  setTimeout(() => {
+    void checkForUpdates(false)
+  }, delayMs).unref?.()
+}
+
+async function checkForUpdates(manual = false) {
+  initializeUpdater()
+  if (!app.isPackaged || IS_DEV) {
+    return publishUpdateStatus({
+      state: 'disabled',
+      error: null,
+      percent: 0,
+    })
+  }
+  if (updateCheckInFlight) return updateStatus
+  updateCheckInFlight = true
+  try {
+    publishUpdateStatus({ state: 'checking', error: null, percent: 0 })
+    await autoUpdater.checkForUpdates()
+  } catch (error) {
+    publishUpdateStatus({
+      state: 'error',
+      error:
+        error instanceof Error ? error.message : 'The update check failed.',
+    })
+  } finally {
+    updateCheckInFlight = false
+    if (manual && updateStatus.state === 'checking') {
+      publishUpdateStatus({ state: 'idle' })
+    }
+  }
+  return updateStatus
+}
+
+function initializeUpdater() {
+  if (updaterInitialized) return
+  updaterInitialized = true
+  autoUpdater.autoDownload = false
+  autoUpdater.autoInstallOnAppQuit = true
+  autoUpdater.allowPrerelease = false
+
+  autoUpdater.on('checking-for-update', () => {
+    publishUpdateStatus({ state: 'checking', error: null })
+  })
+  autoUpdater.on('update-available', (info) => {
+    publishUpdateStatus({
+      state: 'available',
+      version: info?.version ?? null,
+      error: null,
+      percent: 0,
+    })
+    if (updateEntitled) {
+      void autoUpdater.downloadUpdate().catch((error) => {
+        publishUpdateStatus({
+          state: 'error',
+          error:
+            error instanceof Error ? error.message : 'The update download failed.',
+        })
+      })
+    }
+  })
+  autoUpdater.on('update-not-available', () => {
+    publishUpdateStatus({
+      state: 'idle',
+      version: null,
+      error: null,
+      percent: 0,
+    })
+  })
+  autoUpdater.on('download-progress', (progress) => {
+    publishUpdateStatus({
+      state: 'downloading',
+      percent: Math.max(0, Math.min(100, Math.round(progress.percent ?? 0))),
+      error: null,
+    })
+  })
+  autoUpdater.on('update-downloaded', (info) => {
+    publishUpdateStatus({
+      state: 'downloaded',
+      version: info?.version ?? updateStatus.version,
+      percent: 100,
+      error: null,
+    })
+  })
+  autoUpdater.on('error', (error) => {
+    publishUpdateStatus({
+      state: 'error',
+      error: error instanceof Error ? error.message : 'The updater failed.',
+    })
+  })
+}
+
+function registerUpdaterIpc() {
+  ipcMain.handle('updates:status', () => updateStatus)
+  ipcMain.handle('updates:check', () => checkForUpdates(true))
+  ipcMain.handle('updates:set-entitlement', (_event, payload) => {
+    updateEntitled = Boolean(payload?.allowed)
+    publishUpdateStatus({ entitled: updateEntitled })
+    if (updateEntitled) {
+      scheduleUpdateCheck(8000)
+      if (updateStatus.state === 'available') {
+        void autoUpdater.downloadUpdate().catch(() => undefined)
+      }
+    } else if (updateTimer) {
+      clearInterval(updateTimer)
+      updateTimer = null
+    }
+    return updateStatus
+  })
+  ipcMain.handle('updates:download', async () => {
+    initializeUpdater()
+    if (!updateEntitled) {
+      return publishUpdateStatus({
+        state: 'blocked',
+        error: 'This license’s update window has ended.',
+      })
+    }
+    if (updateStatus.state !== 'available' && updateStatus.state !== 'error') {
+      return updateStatus
+    }
+    try {
+      await autoUpdater.downloadUpdate()
+    } catch (error) {
+      publishUpdateStatus({
+        state: 'error',
+        error:
+          error instanceof Error ? error.message : 'The update download failed.',
+      })
+    }
+    return updateStatus
+  })
+  ipcMain.handle('updates:install', () => {
+    if (updateStatus.state !== 'downloaded') {
+      return { ok: false, error: 'No downloaded update is ready.' }
+    }
+    setImmediate(() => {
+      autoUpdater.quitAndInstall(false, true)
+    })
+    return { ok: true }
+  })
+}
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -376,6 +551,12 @@ function buildApplicationMenu() {
             void shell.openPath(app.getPath('userData'))
           },
         },
+        {
+          label: 'Check for Updates…',
+          click: () => {
+            void checkForUpdates(true)
+          },
+        },
         { type: 'separator' },
         {
           label: 'About TruckTap',
@@ -539,6 +720,8 @@ if (!hasSingleInstanceLock) {
     )
 
     registerConsoleIpc()
+    initializeUpdater()
+    registerUpdaterIpc()
     buildApplicationMenu()
 
     if (process.argv.includes('--admin')) {
