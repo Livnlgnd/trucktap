@@ -1,7 +1,7 @@
 {
   "name": "trucktap",
   "private": true,
-  "version": "1.1.16",
+  "version": "1.1.17",
   "description": "Local-first van restock desktop app, PWA, and Team Sync backend for field service teams.",
   "author": "TruckTap",
   "type": "module",

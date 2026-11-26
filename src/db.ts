@@ -394,7 +394,7 @@ export async function findPartByBarcode(
   const part = await db.parts
     .where('vanId')
     .equals(vanId)
-    .filter((item) => item.barcode === code)
+    .filter((item) => item.barcode === code || item.sku === code)
     .first()
   return part ?? null
 }
