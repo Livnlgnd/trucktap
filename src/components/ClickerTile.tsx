@@ -16,10 +16,14 @@ export function ClickerTile({
   part,
   onIncrement,
   onDecrement,
+  tutorialItem = false,
+  tutorialStepper = false,
 }: {
   part: PartItem
   onIncrement: (partId: string) => void
   onDecrement: (partId: string) => void
+  tutorialItem?: boolean
+  tutorialStepper?: boolean
 }) {
   const [flash, setFlash] = useState<FlashState>(null)
   const flashTimer = useRef<number | null>(null)
@@ -85,6 +89,7 @@ export function ClickerTile({
 
   return (
     <article
+      data-tutorial={tutorialItem ? 'item' : undefined}
       className={cn(
         'group relative flex min-h-[224px] flex-col overflow-hidden rounded-2xl border-2 p-3 text-left shadow-sm transition-[transform,border-color,background-color,box-shadow] duration-150 sm:min-h-[238px] sm:p-4',
         isActive
@@ -144,6 +149,7 @@ export function ClickerTile({
       <div className="relative z-20 mt-3 flex items-end justify-between gap-2">
         <button
           type="button"
+          data-tutorial={tutorialStepper ? 'stepper' : undefined}
           onClick={decrement}
           disabled={!isActive}
           aria-label={`Remove one ${part.name} from today's used count`}

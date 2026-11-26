@@ -463,12 +463,14 @@ export function LicenseView({
   remove,
   refresh,
   onToast,
+  onReplayTutorial,
 }: {
   state: TruckTapLicenseState
   activate: (key: string) => Promise<TruckTapLicenseState>
   remove: () => Promise<TruckTapLicenseState>
   refresh: () => Promise<TruckTapLicenseState>
   onToast: (message: string, tone?: ToastTone) => void
+  onReplayTutorial?: () => void
 }) {
   const [removeOpen, setRemoveOpen] = useState(false)
   const [removing, setRemoving] = useState(false)
@@ -668,6 +670,28 @@ export function LicenseView({
           )}
         </section>
         )}
+
+        <section className="rounded-2xl border border-line bg-panel p-5">
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-accent">
+            Help & onboarding
+          </p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-black">Learn TruckTap again</h2>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                Replay the interactive walkthrough on a sandboxed van. Your real
+                inventory is not changed.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onReplayTutorial}
+              className="min-h-12 rounded-xl border border-accent/40 bg-accent/10 px-4 text-xs font-black uppercase tracking-wide text-accent"
+            >
+              Replay Walkthrough
+            </button>
+          </div>
+        </section>
       </div>
 
       <ConfirmDialog

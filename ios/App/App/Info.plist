@@ -8,6 +8,8 @@
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
         <string>TrukTap</string>
+	<key>NSCameraUsageDescription</key>
+	<string>TruckTap uses the camera to scan product barcodes.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

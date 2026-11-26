@@ -5,17 +5,28 @@ import {
   ClipboardList,
   PackageOpen,
   Search,
+  ScanBarcode,
   Send,
   Truck,
   X,
 } from 'lucide-react'
 import type { PartItem, Van } from '../types'
-import { db, decrementPart, incrementPart, submitRestockOrder } from '../db'
+import {
+  addScannedPart,
+  db,
+  decrementPart,
+  deletePart,
+  findPartByBarcode,
+  incrementPart,
+  submitRestockOrder,
+} from '../db'
+import { lookupBarcode } from '../services/barcodeLookupService'
 import { CATEGORIES, getCategoryMeta } from '../lib/templates'
 import { cn, pluralize } from '../lib/utils'
 import type { ToastTone } from './Toast'
 import { ClickerTile } from './ClickerTile'
 import { ConfirmSendDrawer } from './ConfirmSendDrawer'
+import { BarcodeScannerModal } from './BarcodeScannerModal'
 
 function sortParts(parts: PartItem[]): PartItem[] {
   const order = new Map(CATEGORIES.map((category, index) => [category.name, index]))
@@ -29,29 +40,46 @@ function sortParts(parts: PartItem[]): PartItem[] {
 const EMPTY_PARTS: PartItem[] = []
 const HOWTO_DISMISSED_KEY = 'trucktap.howto-dismissed'
 
+export interface TechSandbox {
+  parts: PartItem[]
+  onIncrement: (partId: string) => void
+  onDecrement: (partId: string) => void
+  onScan: () => void
+}
+
 export function TechView({
   vans,
   van,
   onVanChange,
   onOpenManage,
   onToast,
+  sandbox,
 }: {
   vans: Van[]
   van: Van
   onVanChange: (vanId: string) => void
   onOpenManage: () => void
   onToast: (message: string, tone?: ToastTone) => void
+  sandbox?: TechSandbox
 }) {
-  const parts =
+  const liveParts =
     useLiveQuery(
       () => db.parts.where('vanId').equals(van.id).toArray(),
       [van.id],
     ) ?? EMPTY_PARTS
+  const parts = sandbox?.parts ?? liveParts
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('All')
   const [jobTag, setJobTag] = useState('')
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [scannerOpen, setScannerOpen] = useState(false)
+  const [scanBanner, setScanBanner] = useState<{
+    part: PartItem
+    qty: number
+    isNew: boolean
+  } | null>(null)
   const [showHowTo, setShowHowTo] = useState(() => {
+    if (sandbox) return false
     try {
       return !window.localStorage.getItem(HOWTO_DISMISSED_KEY)
     } catch {
@@ -66,6 +94,76 @@ export function TechView({
     } catch {
       // Dismissal is non-critical.
     }
+  }
+
+  const handleScannedBarcode = async (barcode: string) => {
+    if (sandbox) {
+      sandbox.onScan()
+      return
+    }
+    try {
+      const existing = await findPartByBarcode(van.id, barcode)
+      if (existing) {
+        await incrementPart(existing.id)
+        const nextQty = existing.currentUsedToday + 1
+        setScanBanner({
+          part: { ...existing, currentUsedToday: nextQty },
+          qty: nextQty,
+          isNew: false,
+        })
+        onToast(`${existing.name} +1 · Saved locally`, 'success')
+        return
+      }
+
+      const product = await lookupBarcode(barcode, {
+        online: navigator.onLine,
+      })
+      const part = await addScannedPart({
+        vanId: van.id,
+        name: product.name,
+        brand: product.brand,
+        sku: product.sku,
+        barcode: product.barcode,
+        category: product.category,
+        thumbnailUrl: product.thumbnailUrl,
+        needsDetailsSync: product.needsDetailsSync,
+        currentUsedToday: 1,
+        parLevel: 10,
+      })
+      setScanBanner({ part, qty: 1, isNew: true })
+      onToast(`${part.name} added (+1) · Saved locally`, 'success')
+    } catch (error) {
+      onToast(
+        error instanceof Error ? error.message : 'That barcode could not be saved.',
+        'error',
+      )
+    }
+  }
+
+  const adjustScannedQty = async (delta: 1 | -1) => {
+    if (!scanBanner) return
+    if (delta > 0) {
+      await incrementPart(scanBanner.part.id)
+      setScanBanner((current) =>
+        current ? { ...current, qty: current.qty + 1 } : current,
+      )
+    } else {
+      await decrementPart(scanBanner.part.id)
+      setScanBanner((current) =>
+        current ? { ...current, qty: Math.max(0, current.qty - 1) } : current,
+      )
+    }
+  }
+
+  const undoScan = async () => {
+    if (!scanBanner) return
+    if (scanBanner.isNew) {
+      await deletePart(scanBanner.part.id)
+    } else {
+      await decrementPart(scanBanner.part.id)
+    }
+    setScanBanner(null)
+    onToast('Scan change undone.', 'info')
   }
 
   const sortedParts = useMemo(() => sortParts(parts), [parts])
@@ -140,8 +238,22 @@ export function TechView({
             Every tap saves instantly on this device. No signal required.
           </p>
         </div>
-        <div className="hidden rounded-full border border-line bg-panel px-3 py-1.5 text-[11px] font-bold text-muted sm:block">
-          {pluralize(parts.length, 'part')} on board
+        <div className="flex items-center gap-2">
+          <div className="hidden rounded-full border border-line bg-panel px-3 py-1.5 text-[11px] font-bold text-muted sm:block">
+            {pluralize(parts.length, 'part')} on board
+          </div>
+          <button
+            type="button"
+            data-tutorial="scan"
+            onClick={() => {
+              if (sandbox) sandbox.onScan()
+              else setScannerOpen(true)
+            }}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-accent/40 bg-accent/10 px-4 text-xs font-black uppercase tracking-wide text-accent transition hover:bg-accent/15"
+          >
+            <ScanBarcode size={19} />
+            Scan Item
+          </button>
         </div>
       </div>
 
@@ -357,16 +469,26 @@ export function TechView({
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-3 xl:grid-cols-4 xl:gap-4">
-          {visibleParts.map((part) => (
+          {visibleParts.map((part, index) => (
             <ClickerTile
               key={part.id}
               part={part}
+              tutorialItem={index === 0}
+              tutorialStepper={index === 0}
               onIncrement={(partId) => {
+                if (sandbox) {
+                  sandbox.onIncrement(partId)
+                  return
+                }
                 void incrementPart(partId).catch(() => {
                   onToast('That tap could not be saved.', 'error')
                 })
               }}
               onDecrement={(partId) => {
+                if (sandbox) {
+                  sandbox.onDecrement(partId)
+                  return
+                }
                 void decrementPart(partId).catch(() => {
                   onToast('That undo could not be saved.', 'error')
                 })
@@ -403,6 +525,61 @@ export function TechView({
           </button>
         </div>
       </div>
+
+      {scanBanner && (
+        <div className="fixed inset-x-3 bottom-24 z-50 mx-auto max-w-xl rounded-2xl border border-success/40 bg-panel p-3 shadow-2xl sm:bottom-28">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success/15 text-success">
+              <ScanBarcode size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-black text-ink">
+                {scanBanner.part.name}
+              </p>
+              <p className="text-[11px] font-semibold text-success">
+                Saved locally · queued for sync
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void undoScan()}
+              className="rounded-lg border border-line px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wide text-muted"
+            >
+              Undo
+            </button>
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-page px-3 py-2">
+            <span className="text-[10px] font-black uppercase tracking-wide text-muted">
+              Qty
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void adjustScannedQty(-1)}
+                className="h-8 w-8 rounded-lg border border-line text-sm font-black text-ink"
+              >
+                −
+              </button>
+              <span className="min-w-8 text-center text-sm font-black">
+                {scanBanner.qty}
+              </span>
+              <button
+                type="button"
+                onClick={() => void adjustScannedQty(1)}
+                className="h-8 w-8 rounded-lg border border-line text-sm font-black text-ink"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BarcodeScannerModal
+        open={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onDetected={handleScannedBarcode}
+      />
 
       <ConfirmSendDrawer
         open={confirmOpen}

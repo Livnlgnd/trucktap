@@ -30,6 +30,12 @@ class TruckTapDatabase extends Dexie {
       orders: 'id, vanId, status, submittedAt, restockedAt',
       syncQueue: '++id, action, entity, entityId, createdAt, status',
     })
+    this.version(2).stores({
+      vans: 'id, name',
+      parts: 'id, vanId, category, name, sku, barcode',
+      orders: 'id, vanId, status, submittedAt, restockedAt',
+      syncQueue: '++id, action, entity, entityId, createdAt, status',
+    })
   }
 }
 
@@ -379,6 +385,58 @@ export async function deletePart(partId: string): Promise<void> {
   })
 }
 
+export async function findPartByBarcode(
+  vanId: string,
+  barcode: string,
+): Promise<PartItem | null> {
+  const code = barcode.trim()
+  if (!code) return null
+  const part = await db.parts
+    .where('vanId')
+    .equals(vanId)
+    .filter((item) => item.barcode === code)
+    .first()
+  return part ?? null
+}
+
+export async function addScannedPart(input: {
+  vanId: string
+  name: string
+  brand?: string
+  sku?: string
+  barcode: string
+  category: string
+  parLevel?: number
+  currentUsedToday?: number
+  iconName?: string
+  thumbnailUrl?: string
+  needsDetailsSync?: boolean
+}): Promise<PartItem> {
+  return db.transaction('rw', db.parts, db.syncQueue, async () => {
+    const part: PartItem = {
+      id: createId('part'),
+      vanId: input.vanId,
+      name: input.name.trim(),
+      sku: input.sku?.trim() || input.barcode,
+      barcode: input.barcode.trim(),
+      brand: input.brand?.trim() || undefined,
+      category: input.category,
+      parLevel: Math.max(1, input.parLevel ?? 10),
+      currentUsedToday: Math.max(0, input.currentUsedToday ?? 1),
+      iconName: input.iconName ?? 'Package',
+      thumbnailUrl: input.thumbnailUrl,
+      needsDetailsSync: input.needsDetailsSync ?? false,
+    }
+    await db.parts.add(part)
+    await queueSync('inventory:upsert', 'part', part.id, {
+      part,
+      barcode: part.barcode,
+      vanId: part.vanId,
+    })
+    return part
+  })
+}
+
 export async function loadTemplate(
   vanId: string,
   templateParts: TemplatePart[],
@@ -544,12 +602,30 @@ export async function applyServerSnapshot(
       throw new Error('Refusing to replace local data while sync changes are pending.')
     }
 
+    const localParts = await db.parts.toArray()
+    const localByBarcode = new Map(
+      localParts
+        .filter((part) => part.barcode)
+        .map((part) => [part.id, part]),
+    )
+    const mergedParts = snapshot.parts.map((part) => {
+      const local = localByBarcode.get(part.id)
+      if (!local) return part
+      return {
+        ...part,
+        barcode: part.barcode ?? local.barcode,
+        brand: part.brand ?? local.brand,
+        thumbnailUrl: part.thumbnailUrl ?? local.thumbnailUrl,
+        needsDetailsSync: part.needsDetailsSync ?? local.needsDetailsSync,
+      }
+    })
+
     await db.syncQueue.clear()
     await db.vans.clear()
     await db.parts.clear()
     await db.orders.clear()
     await db.vans.bulkPut(snapshot.vans)
-    await db.parts.bulkPut(snapshot.parts)
+    await db.parts.bulkPut(mergedParts)
     await db.orders.bulkPut(snapshot.orders)
   })
 }

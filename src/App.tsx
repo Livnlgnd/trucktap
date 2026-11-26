@@ -20,13 +20,13 @@ import { LicenseGate, LicenseView } from './components/LicenseView'
 import { FirstRunView } from './components/FirstRunView'
 import { MobileJoinView } from './components/MobileJoinView'
 import { TutorialOverlay } from './components/TutorialOverlay'
+import { useTutorialWalkthrough } from './hooks/useTutorialWalkthrough'
 import { Toast, type ToastData, type ToastTone } from './components/Toast'
 import { isDesktopApp, isNativeMobile } from './lib/platform'
 import { useDesktopUpdate } from './hooks/useDesktopUpdate'
 
 const VIEW_KEY = 'trucktap.view'
 const VAN_KEY = 'trucktap.active-van'
-const TUTORIAL_KEY = 'trucktap.tutorial.v1'
 
 function getStoredView(): AppView {
   try {
@@ -60,7 +60,6 @@ function App() {
   const [view, setView] = useState<AppView>(getStoredView)
   const [activeVanId, setActiveVanId] = useState(getStoredVanId)
   const [toast, setToast] = useState<ToastData | null>(null)
-  const [tutorialOpen, setTutorialOpen] = useState(false)
   const toastTimer = useRef<number | null>(null)
   const { theme, toggleTheme } = useTheme()
   const {
@@ -73,6 +72,7 @@ function App() {
   const desktopUpdate = useDesktopUpdate(license.state)
 
   const vans = useLiveQuery(() => db.vans.orderBy('name').toArray(), [])
+  const tutorial = useTutorialWalkthrough(ready, Boolean(vans && vans.length > 0))
 
   const activeVan =
     vans?.find((van) => van.id === activeVanId) ?? vans?.[0] ?? null
@@ -114,24 +114,6 @@ function App() {
       // Van preference is non-critical.
     }
   }, [activeVan])
-
-  useEffect(() => {
-    if (!ready || !vans || vans.length === 0) return
-    try {
-      if (!window.localStorage.getItem(TUTORIAL_KEY)) setTutorialOpen(true)
-    } catch {
-      // The tour is optional if storage is restricted.
-    }
-  }, [ready, vans])
-
-  const closeTutorial = useCallback(() => {
-    try {
-      window.localStorage.setItem(TUTORIAL_KEY, 'seen')
-    } catch {
-      // The tour can reappear if storage is restricted.
-    }
-    setTutorialOpen(false)
-  }, [])
 
   useEffect(
     () => () => {
@@ -226,6 +208,50 @@ function App() {
     )
   }
 
+  if (tutorial.active) {
+    return (
+      <div className="min-h-screen bg-page text-ink">
+        <TopBar
+          view="tech"
+          onViewChange={(next) => {
+            if (next === 'team') tutorial.acknowledgeStatus()
+          }}
+          isOnline={isOnline}
+          simulatedOffline={simulatedOffline}
+          onToggleSimulatedOffline={toggleSimulatedOffline}
+          queueCount={teamSync.queueCount}
+          syncStatus={teamSync.status}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          onOpenTutorial={() => undefined}
+          onTutorialStatusClick={tutorial.acknowledgeStatus}
+        />
+        <main className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
+          <TechView
+            vans={[tutorial.demoVan]}
+            van={tutorial.demoVan}
+            onVanChange={() => undefined}
+            onOpenManage={() => undefined}
+            onToast={showToast}
+            sandbox={{
+              parts: tutorial.demoParts,
+              onIncrement: tutorial.handleIncrement,
+              onDecrement: tutorial.handleDecrement,
+              onScan: tutorial.handleDemoScan,
+            }}
+          />
+        </main>
+        <TutorialOverlay
+          step={tutorial.step}
+          onSkip={tutorial.finish}
+          onFinish={tutorial.finish}
+          onStatusAck={tutorial.acknowledgeStatus}
+        />
+        <Toast toast={toast} />
+      </div>
+    )
+  }
+
   if (!activeVan) return null
 
   return (
@@ -240,7 +266,7 @@ function App() {
         syncStatus={teamSync.status}
         theme={theme}
         onToggleTheme={toggleTheme}
-        onOpenTutorial={() => setTutorialOpen(true)}
+        onOpenTutorial={tutorial.start}
       />
 
       {isDesktopApp() && desktopUpdate.status && (
@@ -405,16 +431,11 @@ function App() {
             remove={license.remove}
             refresh={license.refresh}
             onToast={showToast}
+            onReplayTutorial={tutorial.start}
           />
         )}
       </main>
 
-      <TutorialOverlay
-        open={tutorialOpen}
-        mobile={isNativeMobile()}
-        onClose={closeTutorial}
-        onNavigate={setView}
-      />
       <Toast toast={toast} />
     </div>
   )

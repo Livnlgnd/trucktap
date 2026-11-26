@@ -70,6 +70,7 @@ export function TopBar({
   theme,
   onToggleTheme,
   onOpenTutorial,
+  onTutorialStatusClick,
 }: {
   view: AppView
   onViewChange: (view: AppView) => void
@@ -81,6 +82,7 @@ export function TopBar({
   theme: Theme
   onToggleTheme: () => void
   onOpenTutorial: () => void
+  onTutorialStatusClick?: () => void
 }) {
   const synchronized = syncStatus !== 'local'
   const visibleQueueCount = synchronized ? queueCount : 0
@@ -168,6 +170,10 @@ export function TopBar({
             </button>
 
             <div
+              data-tutorial="status"
+              onClick={onTutorialStatusClick}
+              role={onTutorialStatusClick ? 'button' : undefined}
+              tabIndex={onTutorialStatusClick ? 0 : undefined}
               aria-live="polite"
               title={
                 simulatedOffline

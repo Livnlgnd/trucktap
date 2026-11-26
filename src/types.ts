@@ -18,6 +18,10 @@ export interface PartItem {
   parLevel: number
   currentUsedToday: number
   iconName: string
+  barcode?: string
+  brand?: string
+  thumbnailUrl?: string
+  needsDetailsSync?: boolean
 }
 
 export interface RestockOrderItem {
@@ -47,6 +51,7 @@ export type SyncAction =
   | 'part:create'
   | 'part:update'
   | 'part:delete'
+  | 'inventory:upsert'
   | 'template:load'
   | 'order:submit'
   | 'order:pick'

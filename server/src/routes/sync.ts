@@ -204,7 +204,8 @@ function applyOperation(
     }
 
     case 'part:create':
-    case 'part:update': {
+    case 'part:update':
+    case 'inventory:upsert': {
       const { part } = parsePayload(
         z.object({ part: partSchema }),
         operation.payload,

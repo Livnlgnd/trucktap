@@ -44,6 +44,10 @@ export const partSchema = z.object({
   parLevel: z.number().int().min(0).max(10000),
   currentUsedToday: z.number().int().min(0).max(100000).default(0),
   iconName: z.string().min(1).max(80).default('Package'),
+  barcode: z.string().max(80).optional().default(''),
+  brand: z.string().max(120).optional().default(''),
+  thumbnailUrl: z.string().max(500).optional().default(''),
+  needsDetailsSync: z.boolean().optional().default(false),
 })
 
 export const orderItemSchema = z.object({
@@ -79,6 +83,7 @@ export const syncActionSchema = z.enum([
   'part:create',
   'part:update',
   'part:delete',
+  'inventory:upsert',
   'template:load',
   'order:submit',
   'order:pick',
