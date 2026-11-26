@@ -15,6 +15,7 @@ import {
   getQueuedSyncOperations,
 } from '../db'
 import type { TeamOrganizationResponse, TeamSession } from '../types/team'
+import { readStoredLicenseKey } from '../lib/license'
 
 export type TeamSyncStatus =
   | 'local'
@@ -46,6 +47,7 @@ export interface TeamSyncController {
   }) => Promise<void>
   signOut: () => Promise<void>
   syncNow: () => Promise<void>
+  publishLicense: (licenseKey: string) => Promise<void>
   refreshOrganization: () => Promise<TeamOrganizationResponse>
 }
 
@@ -212,12 +214,29 @@ export function useTeamSync(
       const localWorkspace = await exportLocalSnapshot()
       const nextSession = await teamApi.register({
         ...input,
+        licenseKey: readStoredLicenseKey() || undefined,
         workspace: localWorkspace,
       })
       await clearSyncQueue()
       persistSession(nextSession)
       setLastSyncedAt(new Date().toISOString())
       setError(null)
+    },
+    [persistSession],
+  )
+
+  const publishLicense = useCallback(
+    async (licenseKey: string) => {
+      const activeSession = sessionRef.current
+      if (!activeSession || !licenseKey.trim()) return
+      const result = await teamApi.updateLicense(
+        activeSession.token,
+        licenseKey.trim(),
+      )
+      persistSession({
+        ...activeSession,
+        organization: result.organization,
+      })
     },
     [persistSession],
   )
@@ -350,6 +369,7 @@ export function useTeamSync(
     joinWorkspace,
     signOut,
     syncNow,
+    publishLicense,
     refreshOrganization,
   }
 }

@@ -9,6 +9,7 @@ export const registerSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   workspaceName: z.string().trim().min(1).max(80),
+  licenseKey: z.string().trim().max(5000).optional(),
 })
 
 export const loginSchema = z.object({

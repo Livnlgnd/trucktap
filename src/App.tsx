@@ -78,6 +78,30 @@ function App() {
     vans?.find((van) => van.id === activeVanId) ?? vans?.[0] ?? null
 
   useEffect(() => {
+    const session = teamSync.session
+    if (!session || !license.state?.valid || !license.state.raw) return
+    if (session.organization.licenseKey === license.state.raw) return
+    void teamSync.publishLicense(license.state.raw).catch(() => undefined)
+  }, [
+    license.state?.raw,
+    license.state?.valid,
+    teamSync.publishLicense,
+    teamSync.session?.organization.id,
+    teamSync.session?.organization.licenseKey,
+  ])
+
+  useEffect(() => {
+    const key = teamSync.session?.organization.licenseKey
+    if (!key) return
+    if (license.state?.raw === key) return
+    void license.activate(key).catch(() => undefined)
+  }, [
+    license.activate,
+    license.state?.raw,
+    teamSync.session?.organization.licenseKey,
+  ])
+
+  useEffect(() => {
     let cancelled = false
     initializeDatabase()
       .then(() => {
@@ -174,6 +198,15 @@ function App() {
     )
   }
 
+  if (isNativeMobile() && !teamSync.session) {
+    return (
+      <>
+        <MobileJoinView controller={teamSync} onToast={showToast} />
+        <Toast toast={toast} />
+      </>
+    )
+  }
+
   if (!licenseCanUseApp(license.state)) {
     return (
       <>
@@ -182,15 +215,6 @@ function App() {
           activate={license.activate}
           onToast={showToast}
         />
-        <Toast toast={toast} />
-      </>
-    )
-  }
-
-  if (isNativeMobile() && !teamSync.session) {
-    return (
-      <>
-        <MobileJoinView controller={teamSync} onToast={showToast} />
         <Toast toast={toast} />
       </>
     )

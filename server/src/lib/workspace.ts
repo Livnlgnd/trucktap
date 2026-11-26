@@ -9,6 +9,7 @@ interface OrganizationRow {
   plan: string
   revision: number
   created_at: string
+  license_key?: string | null
 }
 
 interface VanRow {
@@ -48,6 +49,7 @@ export interface Snapshot {
     plan: string
     revision: number
     role: Role
+    licenseKey?: string
   }
   vans: Array<{
     id: string
@@ -144,6 +146,7 @@ export function getSnapshot(auth: AuthContext): Snapshot {
       plan: organization.plan,
       revision: organization.revision,
       role: auth.role,
+      licenseKey: organization.license_key ?? undefined,
     },
     vans: vans.map((van) => ({
       id: van.id,

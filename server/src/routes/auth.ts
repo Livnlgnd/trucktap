@@ -41,6 +41,7 @@ function sessionPayload(input: {
   plan: string
   revision: number
   role: Role
+  licenseKey?: string
 }) {
   return {
     token: createAccessToken(input.userId, input.orgId),
@@ -56,6 +57,7 @@ function sessionPayload(input: {
       plan: input.plan,
       revision: input.revision,
       role: input.role,
+      licenseKey: input.licenseKey,
     },
   }
 }
@@ -92,7 +94,7 @@ authRouter.post('/register', authRateLimit, (request, response) => {
     return
   }
 
-  const { name, password, workspaceName } = parsed.data
+  const { name, password, workspaceName, licenseKey } = parsed.data
   const email = normalizeEmail(parsed.data.email)
   const existingUser = db
     .prepare('SELECT 1 FROM users WHERE email = ?')
@@ -124,9 +126,9 @@ authRouter.post('/register', authRateLimit, (request, response) => {
     transaction(() => {
       db.prepare(
         `INSERT INTO organizations
-          (id, name, join_code, plan, revision, created_at)
-         VALUES (?, ?, ?, 'team', 0, ?)`,
-      ).run(orgId, workspaceName, joinCode, createdAt)
+          (id, name, join_code, plan, revision, created_at, license_key)
+         VALUES (?, ?, ?, 'team', 0, ?, ?)`,
+      ).run(orgId, workspaceName, joinCode, createdAt, licenseKey ?? null)
 
       db.prepare(
         `INSERT INTO users (id, email, name, password_hash, created_at)
@@ -166,6 +168,7 @@ authRouter.post('/register', authRateLimit, (request, response) => {
       plan: 'team',
       revision: organization?.revision ?? 0,
       role: 'owner',
+      licenseKey,
     }),
   )
 })
@@ -205,6 +208,7 @@ authRouter.post('/login', authRateLimit, (request, response) => {
       plan: organization.plan,
       revision: organization.revision,
       role: membership.role,
+      licenseKey: organization.license_key ?? undefined,
     }),
   )
 })
@@ -237,6 +241,7 @@ authRouter.post('/join', authRateLimit, (request, response) => {
         join_code: string
         plan: string
         revision: number
+        license_key?: string | null
       }
     | undefined
 
@@ -281,6 +286,7 @@ authRouter.post('/join', authRateLimit, (request, response) => {
       plan: organization.plan,
       revision: organization.revision,
       role,
+      licenseKey: organization.license_key ?? undefined,
     }),
   )
 })

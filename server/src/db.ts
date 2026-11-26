@@ -94,6 +94,12 @@ db.exec(`
   );
 `)
 
+try {
+  db.exec('ALTER TABLE organizations ADD COLUMN license_key TEXT')
+} catch {
+  // Column already exists.
+}
+
 export function nowIso(): string {
   return new Date().toISOString()
 }

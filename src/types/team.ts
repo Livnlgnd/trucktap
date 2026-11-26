@@ -15,6 +15,7 @@ export interface TeamOrganization {
   plan: string
   revision: number
   role: TeamRole
+  licenseKey?: string
 }
 
 export interface TeamSession {

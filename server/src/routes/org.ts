@@ -27,8 +27,41 @@ orgRouter.get('/', (_request, response) => {
       plan: organization.plan,
       revision: organization.revision,
       role: auth.role,
+      licenseKey: organization.license_key ?? undefined,
     },
     members: listMembers(auth.orgId),
+  })
+})
+
+orgRouter.patch('/license', requireOwner, (request, response) => {
+  const auth = getAuth(response)
+  const licenseKey =
+    typeof request.body?.licenseKey === 'string'
+      ? request.body.licenseKey.trim()
+      : ''
+  if (!licenseKey || licenseKey.length > 5000) {
+    response.status(400).json({ error: 'Enter a valid license key.' })
+    return
+  }
+  db.prepare('UPDATE organizations SET license_key = ? WHERE id = ?').run(
+    licenseKey,
+    auth.orgId,
+  )
+  const organization = getOrganization(auth.orgId)
+  if (!organization) {
+    response.status(404).json({ error: 'Workspace not found.' })
+    return
+  }
+  response.json({
+    organization: {
+      id: organization.id,
+      name: organization.name,
+      joinCode: organization.join_code,
+      plan: organization.plan,
+      revision: organization.revision,
+      role: auth.role,
+      licenseKey: organization.license_key ?? undefined,
+    },
   })
 })
 

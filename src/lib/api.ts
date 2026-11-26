@@ -186,6 +186,7 @@ export const teamApi = {
     email: string
     password: string
     workspaceName: string
+    licenseKey?: string
     workspace?: {
       vans: unknown[]
       parts: unknown[]
@@ -220,6 +221,17 @@ export const teamApi = {
 
   org(token: string): Promise<TeamOrganizationResponse> {
     return requestApi('/api/org', { token })
+  },
+
+  updateLicense(
+    token: string,
+    licenseKey: string,
+  ): Promise<{ organization: TeamSession['organization'] }> {
+    return requestApi('/api/org/license', {
+      method: 'PATCH',
+      token,
+      body: { licenseKey },
+    })
   },
 
   importWorkspace(

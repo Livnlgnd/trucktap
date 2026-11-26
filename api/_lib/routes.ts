@@ -83,6 +83,7 @@ function sessionPayload(input: {
   plan: string
   revision: number
   role: Role
+  licenseKey?: string
 }) {
   return {
     token: createAccessToken(input.userId, input.orgId),
@@ -98,6 +99,7 @@ function sessionPayload(input: {
       plan: input.plan,
       revision: input.revision,
       role: input.role,
+      licenseKey: input.licenseKey,
     },
   }
 }
@@ -128,7 +130,7 @@ export async function register(request: Request): Promise<Response> {
     validationError(workspaceResult.error)
   }
 
-  const { name, password, workspaceName } = parsed.data
+  const { name, password, workspaceName, licenseKey } = parsed.data
   const email = normalizeEmail(parsed.data.email)
   const existing = await db.one('SELECT id FROM users WHERE email = $1', [email])
   if (existing) {
@@ -143,9 +145,9 @@ export async function register(request: Request): Promise<Response> {
   try {
     await transaction(async (tx) => {
       await tx.execute(
-        `INSERT INTO organizations (id, name, join_code, plan, revision, created_at)
-         VALUES ($1, $2, $3, 'team', 0, $4)`,
-        [orgId, workspaceName, joinCode, createdAt],
+        `INSERT INTO organizations (id, name, join_code, plan, revision, created_at, license_key)
+         VALUES ($1, $2, $3, 'team', 0, $4, $5)`,
+        [orgId, workspaceName, joinCode, createdAt, licenseKey ?? null],
       )
       await tx.execute(
         `INSERT INTO users (id, email, name, password_hash, created_at)
@@ -181,6 +183,7 @@ export async function register(request: Request): Promise<Response> {
       plan: 'team',
       revision: organization?.revision ?? 0,
       role: 'owner',
+      licenseKey,
     }),
     201,
   )
@@ -223,6 +226,7 @@ export async function login(request: Request): Promise<Response> {
       plan: organization.plan,
       revision: organization.revision,
       role: membership.role,
+      licenseKey: organization.license_key ?? undefined,
     }),
   )
 }
@@ -247,8 +251,9 @@ export async function join(request: Request): Promise<Response> {
     join_code: string
     plan: string
     revision: number
+    license_key?: string | null
   }>(
-    'SELECT id, name, join_code, plan, revision FROM organizations WHERE join_code = $1',
+    'SELECT id, name, join_code, plan, revision, license_key FROM organizations WHERE join_code = $1',
     [joinCode],
   )
   if (!organization) {
@@ -293,6 +298,7 @@ export async function join(request: Request): Promise<Response> {
       plan: organization.plan,
       revision: organization.revision + 1,
       role,
+      licenseKey: organization.license_key ?? undefined,
     }),
     201,
   )
@@ -311,8 +317,40 @@ export async function getOrg(request: Request): Promise<Response> {
       plan: organization.plan,
       revision: organization.revision,
       role: auth.role,
+      licenseKey: organization.license_key ?? undefined,
     },
     members: await listMembers(auth.orgId),
+  })
+}
+
+export async function updateOrgLicense(request: Request): Promise<Response> {
+  await ensureSchema()
+  const auth = await getAuthContext(request)
+  if (auth.role !== 'owner') {
+    throw new HttpError('Only the workspace owner can update the license.', 403)
+  }
+  const body = (await readJson(request)) as { licenseKey?: unknown }
+  const licenseKey =
+    typeof body.licenseKey === 'string' ? body.licenseKey.trim() : ''
+  if (!licenseKey || licenseKey.length > 5000) {
+    throw new HttpError('Enter a valid license key.', 400)
+  }
+  await db.execute(
+    'UPDATE organizations SET license_key =  WHERE id = ',
+    [licenseKey, auth.orgId],
+  )
+  const organization = await getOrganization(auth.orgId)
+  if (!organization) throw new HttpError('Workspace not found.', 404)
+  return json(request, {
+    organization: {
+      id: organization.id,
+      name: organization.name,
+      joinCode: organization.join_code,
+      plan: organization.plan,
+      revision: organization.revision,
+      role: auth.role,
+      licenseKey: organization.license_key ?? undefined,
+    },
   })
 }
 

@@ -139,6 +139,10 @@ async function initializeSchema(): Promise<void> {
       PRIMARY KEY (org_id, op_id)
     );
   `)
+
+  await getPool().query(
+    'ALTER TABLE organizations ADD COLUMN IF NOT EXISTS license_key TEXT',
+  )
 }
 
 export function ensureSchema(): Promise<void> {
