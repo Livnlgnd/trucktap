@@ -19,11 +19,13 @@ import { TeamSyncView } from './components/TeamSyncView'
 import { LicenseGate, LicenseView } from './components/LicenseView'
 import { FirstRunView } from './components/FirstRunView'
 import { MobileJoinView } from './components/MobileJoinView'
+import { TutorialOverlay } from './components/TutorialOverlay'
 import { Toast, type ToastData, type ToastTone } from './components/Toast'
 import { isNativeMobile } from './lib/platform'
 
 const VIEW_KEY = 'trucktap.view'
 const VAN_KEY = 'trucktap.active-van'
+const TUTORIAL_KEY = 'trucktap.tutorial.v1'
 
 function getStoredView(): AppView {
   try {
@@ -57,6 +59,7 @@ function App() {
   const [view, setView] = useState<AppView>(getStoredView)
   const [activeVanId, setActiveVanId] = useState(getStoredVanId)
   const [toast, setToast] = useState<ToastData | null>(null)
+  const [tutorialOpen, setTutorialOpen] = useState(false)
   const toastTimer = useRef<number | null>(null)
   const { theme, toggleTheme } = useTheme()
   const {
@@ -109,6 +112,24 @@ function App() {
       // Van preference is non-critical.
     }
   }, [activeVan])
+
+  useEffect(() => {
+    if (!ready || !vans || vans.length === 0) return
+    try {
+      if (!window.localStorage.getItem(TUTORIAL_KEY)) setTutorialOpen(true)
+    } catch {
+      // The tour is optional if storage is restricted.
+    }
+  }, [ready, vans])
+
+  const closeTutorial = useCallback(() => {
+    try {
+      window.localStorage.setItem(TUTORIAL_KEY, 'seen')
+    } catch {
+      // The tour can reappear if storage is restricted.
+    }
+    setTutorialOpen(false)
+  }, [])
 
   useEffect(
     () => () => {
@@ -217,6 +238,7 @@ function App() {
         syncStatus={teamSync.status}
         theme={theme}
         onToggleTheme={toggleTheme}
+        onOpenTutorial={() => setTutorialOpen(true)}
       />
 
       {license.state.source === 'trial' &&
@@ -306,6 +328,12 @@ function App() {
         )}
       </main>
 
+      <TutorialOverlay
+        open={tutorialOpen}
+        mobile={isNativeMobile()}
+        onClose={closeTutorial}
+        onNavigate={setView}
+      />
       <Toast toast={toast} />
     </div>
   )

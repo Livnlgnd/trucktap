@@ -5,6 +5,7 @@ import {
   Cloud,
   CloudOff,
   CloudUpload,
+  CircleHelp,
   KeyRound,
   LoaderCircle,
   Moon,
@@ -68,6 +69,7 @@ export function TopBar({
   syncStatus,
   theme,
   onToggleTheme,
+  onOpenTutorial,
 }: {
   view: AppView
   onViewChange: (view: AppView) => void
@@ -78,6 +80,7 @@ export function TopBar({
   syncStatus: TeamSyncStatus
   theme: Theme
   onToggleTheme: () => void
+  onOpenTutorial: () => void
 }) {
   const synchronized = syncStatus !== 'local'
   const visibleQueueCount = synchronized ? queueCount : 0
@@ -212,7 +215,7 @@ export function TopBar({
                   : 'Simulate offline mode'
               }
               className={cn(
-                'flex h-11 items-center gap-2 rounded-xl border px-2.5 text-[11px] font-black uppercase tracking-wide transition active:scale-95 sm:px-3',
+                'hidden h-11 items-center gap-2 rounded-xl border px-2.5 text-[11px] font-black uppercase tracking-wide transition active:scale-95 sm:flex sm:px-3',
                 simulatedOffline
                   ? 'border-warn/40 bg-warn/10 text-warn hover:bg-warn/15'
                   : 'border-line bg-panel text-muted hover:bg-panel-2 hover:text-ink',
@@ -222,6 +225,16 @@ export function TopBar({
               <span className="hidden md:inline">
                 {simulatedOffline ? 'Go online' : 'Simulate offline'}
               </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenTutorial}
+              aria-label="Open the TruckTap tutorial"
+              title="Open the TruckTap tutorial"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-panel text-muted transition hover:text-ink active:scale-95"
+            >
+              <CircleHelp size={20} />
             </button>
 
             <button
