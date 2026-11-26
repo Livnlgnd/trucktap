@@ -30,6 +30,7 @@ const CONSOLE_API_BASE =
 const CONSOLE_ALLOWED_PATHS = [/^\/api\/trucktap\/admin\/licenses$/]
 const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL
 const IS_DEV = Boolean(DEV_SERVER_URL)
+const ADMIN_CONSOLE_ENABLED = process.env.TRUCTTAP_ADMIN_CONSOLE === '1'
 
 const { autoUpdater } = electronUpdater
 const UPDATE_INTERVAL_MS = 6 * 60 * 60 * 1000
@@ -540,12 +541,6 @@ function buildApplicationMenu() {
       label: 'Help',
       submenu: [
         {
-          label: 'License Console…',
-          accelerator: 'CmdOrCtrl+Shift+A',
-          click: () => openAdminConsole(),
-        },
-        { type: 'separator' },
-        {
           label: 'Open Data Folder',
           click: () => {
             void shell.openPath(app.getPath('userData'))
@@ -584,7 +579,10 @@ async function registerAppProtocol() {
       // web build. Keep it in electron/admin and serve it from there.
       let baseDir = DIST_DIR
       let relativePath = pathname
-      if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+      if (
+        ADMIN_CONSOLE_ENABLED &&
+        (pathname === '/admin' || pathname.startsWith('/admin/'))
+      ) {
         baseDir = path.join(__dirname, 'admin')
         relativePath = pathname.slice('/admin'.length) || '/index.html'
       }
@@ -724,7 +722,7 @@ if (!hasSingleInstanceLock) {
     registerUpdaterIpc()
     buildApplicationMenu()
 
-    if (process.argv.includes('--admin')) {
+    if (ADMIN_CONSOLE_ENABLED && process.argv.includes('--admin')) {
       openAdminConsole()
     } else {
       createWindow()

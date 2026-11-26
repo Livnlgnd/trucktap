@@ -51,7 +51,7 @@ npm run desktop:dist     # Windows installer in release/
 The prebuilt installer is:
 
 ```text
-release/TruckTap-Setup-1.1.17.exe
+release/TruckTap-Setup-1.1.18.exe
 ```
 
 Desktop details:
@@ -89,11 +89,10 @@ npm run mobile:assets     # regenerate app icons and splash screens
 
 ## License console (admin)
 
-The Windows desktop app includes the internal License Console behind the admin
-token. It is not shown in the customer-facing navigation.
+The License Console is not available in customer builds. It is gated behind
+an internal environment flag and is not shown in any menu.
 
-- Open **Help → License Console…** or press **Ctrl+Shift+A**.
-- Launch the console directly with `TruckTap.exe --admin`.
+- Launch with `TRUCKTAP_ADMIN_CONSOLE=1` and `TruckTap.exe --admin`.
 - Log in with the Worker secret `TRUCKTAP_ADMIN_TOKEN`. The token is encrypted
   with Windows DPAPI after the first successful login.
 - The console lists Stripe and manually issued licenses, decodes plan limits,
