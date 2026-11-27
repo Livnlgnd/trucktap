@@ -8,6 +8,7 @@ import {
   CloudOff,
   Copy,
   LoaderCircle,
+  KeyRound,
   LockKeyhole,
   LogOut,
   Mail,
@@ -22,6 +23,7 @@ import {
 import type { TeamMember, TeamRole } from '../types/team'
 import type { TeamSyncController } from '../hooks/useTeamSync'
 import { getApiBaseUrl, setApiBaseUrl, teamApi } from '../lib/api'
+import { readStoredLicenseKey } from '../lib/license'
 import { cn, formatDateTime, pluralize } from '../lib/utils'
 import { ConfirmDialog } from './ConfirmDialog'
 import type { ToastTone } from './Toast'
@@ -828,6 +830,65 @@ export function TeamSyncView({
                   views refresh about every 8 seconds.
                 </p>
               </div>
+            </section>
+
+            <section className="rounded-2xl border border-line bg-panel p-4 shadow-sm sm:p-5">
+              <div className="flex items-center gap-2 text-muted">
+                <KeyRound size={18} />
+                <h2 className="text-sm font-black text-ink">Shop license</h2>
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                Phones that join this workspace inherit this shop’s license.
+              </p>
+              <div
+                className={`mt-3 rounded-xl border px-3 py-2 text-xs font-bold ${
+                  session.organization.licenseKey
+                    ? 'border-success/30 bg-success/10 text-success'
+                    : 'border-warn/30 bg-warn/10 text-warn'
+                }`}
+              >
+                {session.organization.licenseKey
+                  ? 'License published to this workspace'
+                  : 'No license published yet'}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const localKey = readStoredLicenseKey()
+                  if (localKey) {
+                    void controller
+                      .publishLicense(localKey)
+                      .then(() =>
+                        onToast('Shop license published to Team Sync.', 'success'),
+                      )
+                      .catch((error: unknown) =>
+                        onToast(
+                          error instanceof Error
+                            ? error.message
+                            : 'Could not publish the shop license.',
+                          'error',
+                        ),
+                      )
+                  } else {
+                    void controller
+                      .refreshOrganization()
+                      .then((info) =>
+                        onToast(
+                          info.organization.licenseKey
+                            ? 'Shop license refreshed.'
+                            : 'No license has been published by the shop owner yet.',
+                          info.organization.licenseKey ? 'success' : 'info',
+                        ),
+                      )
+                      .catch(() => onToast('Could not refresh the shop license.', 'error'))
+                  }
+                }}
+                className="mt-3 min-h-12 w-full rounded-xl border border-accent/40 bg-accent/10 px-3 text-xs font-black uppercase tracking-wide text-accent"
+              >
+                {readStoredLicenseKey()
+                  ? 'Publish this license'
+                  : 'Refresh shop license'}
+              </button>
             </section>
           </div>
         </div>

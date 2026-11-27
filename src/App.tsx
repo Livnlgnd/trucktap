@@ -102,6 +102,16 @@ function App() {
   ])
 
   useEffect(() => {
+    const session = teamSync.session
+    if (!session || session.organization.licenseKey) return
+    void teamSync.refreshOrganization().catch(() => undefined)
+  }, [
+    teamSync.refreshOrganization,
+    teamSync.session?.organization.id,
+    teamSync.session?.organization.licenseKey,
+  ])
+
+  useEffect(() => {
     let cancelled = false
     initializeDatabase()
       .then(() => {
